@@ -1,0 +1,2 @@
+source;share/diffbot_description/environment/ament_prefix_path.sh
+source;share/diffbot_description/environment/path.sh

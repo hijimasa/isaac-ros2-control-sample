@@ -1,0 +1,3 @@
+[submodule "colcon_ws/src/xacro"]
+	path = colcon_ws/src/xacro
+	url = https://github.com/ros/xacro.git

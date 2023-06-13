@@ -19,7 +19,7 @@ extern "C" {
 }
 #include <string>
 
-#include "isaac_ros2_control/blv_comunicator.h"
+#include "isaac_ros2_control/shm_comunicator.h"
 
 constexpr struct timespec BlvComunicator::BROADCAST_DELAY;
 constexpr struct timespec BlvComunicator::RESPONSE_DELAY;

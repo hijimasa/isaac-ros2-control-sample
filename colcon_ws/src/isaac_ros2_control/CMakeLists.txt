@@ -23,7 +23,7 @@ add_library(
   ${PROJECT_NAME}
   SHARED
   src/isaac_system.cpp
-  src/blv_comunicator.cpp
+  src/shm_comunicator.cpp
 )
 target_include_directories(
   ${PROJECT_NAME}

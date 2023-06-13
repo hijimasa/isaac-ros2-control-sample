@@ -29,7 +29,7 @@
 #include "rclcpp_lifecycle/node_interfaces/lifecycle_node_interface.hpp"
 #include "rclcpp_lifecycle/state.hpp"
 #include "isaac_ros2_control/visibility_control.h"
-#include <isaac_ros2_control/blv_comunicator.h>
+#include <isaac_ros2_control/shm_comunicator.h>
 
 using CallbackReturn = rclcpp_lifecycle::node_interfaces::LifecycleNodeInterface::CallbackReturn;
 

@@ -14,6 +14,7 @@ The features of this repository are below:
 ## Prerequisite
 1. Docker
 1. Isaac Sim Docker Image (Tested using image based on nvcr.io/nvidia/isaac-sim:2022.2.1)
+1. Nucleus Server (I installed with the Omniverse Laungher)
 
 ## How to use
 1. Install Docker and pull Isaac Sim Docker Image.

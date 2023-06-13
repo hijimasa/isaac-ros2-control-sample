@@ -8,7 +8,7 @@ RUN set -x && \
   apt-get update -y -qq && \
   apt-get upgrade -y -qq --no-install-recommends && \
   apt-get install -y -qq \
-    libyaml-cpp-dev curl \
+    libyaml-cpp-dev curl software-properties-common \
     vim v4l-utils exfat-* \
     openssh-server \
     terminator dbus-x11 \
@@ -17,10 +17,17 @@ RUN set -x && \
   apt-get autoremove -y -qq && \
   rm -rf /var/lib/apt/lists/*
 
+RUN wget -O - https://apt.kitware.com/keys/kitware-archive-latest.asc 2>/dev/null | gpg --dearmor - | tee /etc/apt/trusted.gpg.d/kitware.gpg >/dev/null && \
+    apt-add-repository "deb https://apt.kitware.com/ubuntu/ $(lsb_release -cs) main" && \
+    apt update && \
+    apt install -y -qq cmake
+
 # for ros2
 RUN curl -sSL https://raw.githubusercontent.com/ros/rosdistro/master/ros.key -o /usr/share/keyrings/ros-archive-keyring.gpg && \
     echo "deb [arch=$(dpkg --print-architecture) signed-by=/usr/share/keyrings/ros-archive-keyring.gpg] http://packages.ros.org/ros2/ubuntu $(. /etc/os-release && echo $UBUNTU_CODENAME) main" | tee /etc/apt/sources.list.d/ros2.list > /dev/null
-RUN apt update && apt install -q -y --no-install-recommends \
+RUN apt update && \
+    apt-get upgrade -y -qq --no-install-recommends && \
+    apt install -q -y \
     python3-flake8-docstrings \
     python3-pytest-cov \
     ros-dev-tools && \
@@ -35,6 +42,12 @@ RUN apt update && apt install -q -y --no-install-recommends \
     "pytest>=5.3" \
     pytest-repeat \
     pytest-rerunfailures
+RUN apt update && \
+    apt-get upgrade -y -qq --no-install-recommends && \
+    apt install -q -y \
+    libfmt-dev librange-v3-dev
+RUN pip install -U pip \
+    pip install -U jinja2 typeguard
 RUN mkdir -p ~/ros2_humble/src && \
     cd ~/ros2_humble && \
     vcs import --input https://raw.githubusercontent.com/ros2/ros2/humble/ros2.repos src && \

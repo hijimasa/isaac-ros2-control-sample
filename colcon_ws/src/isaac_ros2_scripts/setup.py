@@ -24,7 +24,7 @@ setup(
     tests_require=['pytest'],
     entry_points={
         'console_scripts': [
-            'launcher = isaac_ros2_scripts.lauhcher:main',
+            'launcher = isaac_ros2_scripts.launcher:main',
         ],
     },
 )

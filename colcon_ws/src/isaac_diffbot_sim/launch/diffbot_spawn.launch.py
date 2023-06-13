@@ -1,14 +1,14 @@
 import os
+import pathlib
 
 from ament_index_python.packages import get_package_share_directory
 
 
 from launch import LaunchDescription
-from launch.actions import DeclareLaunchArgument, ExecuteProcess, IncludeLaunchDescription
-from launch.actions import RegisterEventHandler
+from launch.substitutions import Command, FindExecutable, PathJoinSubstitution
+from launch.actions import ExecuteProcess, IncludeLaunchDescription, RegisterEventHandler
 from launch.event_handlers import OnProcessExit
 from launch.launch_description_sources import PythonLaunchDescriptionSource
-from launch.substitutions import LaunchConfiguration
 
 from launch_ros.actions import Node
 from launch_ros.substitutions import FindPackageShare
@@ -17,29 +17,41 @@ import xacro
 
 
 def generate_launch_description():
-    # Launch Arguments
-    use_sim_time = LaunchConfiguration('use_sim_time', default=True)
+    isaac_diffbot_description_path = os.path.join(
+        get_package_share_directory('diffbot_description'))
 
-    gazebo = IncludeLaunchDescription(
-                PythonLaunchDescriptionSource([os.path.join(
-                    get_package_share_directory('ros_gz_sim'), 'launch'), '/gz_sim.launch.py']),
-                launch_arguments=[('gz_args', [' -r -v 4 empty.sdf'])]
-             )
-
-    ignition_diffbot_description_path = os.path.join(
-        get_package_share_directory('ignition_diffbot_description'))
-
-    xacro_file = os.path.join(ignition_diffbot_description_path,
+    xacro_file = os.path.join(isaac_diffbot_description_path,
                               'robots',
                               'diffbot.urdf.xacro')
+    urdf_path = os.path.join(isaac_diffbot_description_path, 'robots', 'diffbot.urdf')
     # xacroをロード
     doc = xacro.process_file(xacro_file, mappings={'use_sim' : 'true'})
     # xacroを展開してURDFを生成
     robot_desc = doc.toprettyxml(indent='  ')
+    f = open(urdf_path, 'w')
+    f.write(robot_desc)
+    f.close()
+    relative_urdf_path = pathlib.Path(urdf_path).relative_to(os.getcwd())
 
     params = {'robot_description': robot_desc}
 
-    rviz_config_file = os.path.join(ignition_diffbot_description_path, 'config', 'diffbot_config.rviz')
+    robot_controllers = PathJoinSubstitution(
+        [
+            FindPackageShare("isaac_diffbot_sim"),
+            "config",
+            "isaac_diffbot.yaml",
+        ]
+    )
+
+    control_node = Node(
+        package="controller_manager",
+        executable="ros2_control_node",
+        parameters=[params, robot_controllers],
+        output={
+            "stdout": "screen",
+            "stderr": "screen",
+        },
+    )
     
     node_robot_state_publisher = Node(
         package='robot_state_publisher',
@@ -48,74 +60,38 @@ def generate_launch_description():
         parameters=[params]
     )
 
-    gz_spawn_entity = Node(
-        package='ros_gz_sim',
-        executable='create',
-        output='screen',
-        arguments=['-string', robot_desc,
-                   '-name', 'diff_bot',
-                   '-allow_renaming', 'false'],
+    joint_state_broadcaster_spawner = Node(
+        package="controller_manager",
+        executable="spawner",
+        arguments=["joint_state_broadcaster", "--controller-manager", "/controller_manager"],
     )
-
-    load_joint_state_controller = ExecuteProcess(
-        cmd=['ros2', 'control', 'load_controller', '--set-state', 'active',
-             'joint_state_broadcaster'],
-        output='screen'
-    )
-
-    load_diff_drive_controller = ExecuteProcess(
-        cmd=['ros2', 'control', 'load_controller', '--set-state', 'active',
-             'diff_drive_controller'],
-        output='screen'
-    )
-
-    # Bridge
-    bridge = Node(
-        package='ros_gz_bridge',
-        executable='parameter_bridge',
-        arguments=['/scan@sensor_msgs/msg/LaserScan@ignition.msgs.LaserScan',
-                   '/camera_info@sensor_msgs/msg/CameraInfo@ignition.msgs.CameraInfo',
-                   '/image_raw@sensor_msgs/msg/Image@ignition.msgs.Image',
-                   '/depth_camera/camera_info@sensor_msgs/msg/CameraInfo@ignition.msgs.CameraInfo',
-                   '/depth_camera/image_raw@sensor_msgs/msg/Image@ignition.msgs.Image',
-                   '/depth_camera/image_raw/points@sensor_msgs/msg/PointCloud2@ignition.msgs.PointCloudPacked'],
-        output='screen'
+    
+    diff_drive_controller_spawner = Node(
+        package="controller_manager",
+        executable="spawner",
+        arguments=["diff_drive_controller", "--controller-manager", "/controller_manager"],
     )
 
     velocity_converter = Node(
         package='velocity_pub',
         name='velocity_pub',
         executable='velocity_pub',
-        remappings=[
-            ('/cmd_vel_stamped', '/diff_drive_controller/cmd_vel'),
+       remappings=[
+            ('cmd_vel_stamped', '/diff_drive_controller/cmd_vel'),
         ],
     )
-
-    rviz = Node(
-        package="rviz2",
-        executable="rviz2",
-        name="rviz2",
-        output="log",
-        arguments=["-d", rviz_config_file],
+        
+    isaac_launcher = Node(
+        package="isaac_ros2_scripts",
+        executable="launcher",
+        parameters=[{'urdf_path': str(relative_urdf_path)}],
     )
     
     return LaunchDescription([
-        RegisterEventHandler(
-            event_handler=OnProcessExit(
-                target_action=gz_spawn_entity,
-                on_exit=[load_joint_state_controller],
-            )
-        ),
-        RegisterEventHandler(
-            event_handler=OnProcessExit(
-               target_action=load_joint_state_controller,
-               on_exit=[load_diff_drive_controller],
-            )
-        ),
-        gazebo,
+        control_node,
         node_robot_state_publisher,
-        gz_spawn_entity,
-        bridge,
+        joint_state_broadcaster_spawner,
+        diff_drive_controller_spawner,
         velocity_converter,
-        rviz,
+        isaac_launcher,
     ])

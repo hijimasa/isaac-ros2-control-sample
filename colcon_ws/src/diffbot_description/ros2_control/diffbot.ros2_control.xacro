@@ -11,13 +11,8 @@
           <param name="state_following_offset">0.0</param>
         </xacro:if>
         <xacro:if value="${use_sim}">
-          <plugin>gz_ros2_control/GazeboSimSystem</plugin>
+          <plugin>isaac_ros2_control/IsaacSystem</plugin>
         </xacro:if>
-        <xacro:unless value="${use_fake_hardware or use_sim}">
-          <!--
-          <plugin>your_hardware/YourHardware</plugin>
-          -->
-        </xacro:unless>
       </hardware>
       <joint name="${prefix}left_wheel_joint">
         <command_interface name="velocity">

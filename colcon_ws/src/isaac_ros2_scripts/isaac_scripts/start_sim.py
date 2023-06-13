@@ -1,6 +1,7 @@
 import os
 import mmap
 import sys
+import math
 import struct
 import argparse
 from omni.isaac.kit import SimulationApp
@@ -194,9 +195,10 @@ def main():
     try:
         while True:
             for index in range(len(joints_prim_paths)):
-                command = clsMMap.ReadFloat(4*index);
+                radps = clsMMap.ReadFloat(4*index);
                 # Set the velocity drive target in degrees/second
-                drive[index].GetTargetVelocityAttr().Set(command)
+                print(radps * 180 / math.pi)
+                drive[index].GetTargetVelocityAttr().Set(radps * 180 / math.pi)
 
                 # Set the drive damping, which controls the strength of the velocity drive
                 drive[index].GetDampingAttr().Set(15000)

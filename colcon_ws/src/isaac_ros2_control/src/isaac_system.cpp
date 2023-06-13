@@ -94,6 +94,8 @@ CallbackReturn IsaacSystem::on_init(const hardware_interface::HardwareInfo & inf
       return CallbackReturn::ERROR;
     }
   }
+  
+  shm.openMemory();
 
   return CallbackReturn::SUCCESS;
 }
@@ -159,33 +161,17 @@ CallbackReturn IsaacSystem::on_deactivate(
 
 hardware_interface::return_type IsaacSystem::read(const rclcpp::Time & time, const rclcpp::Duration & period)
 {
-  RCLCPP_INFO(rclcpp::get_logger("IsaacSystem"), "Reading...");
-
-  int motor_direction;
   for (uint i = 0; i < hw_commands_.size(); i++)
   {
-    if (i % 2 == 0)
-    {
-      motor_direction = 1;
-    }
-    else
-    {
-      motor_direction = -1;
-    }
-
-    int rpm = 0;
-    //serial_port_->readRpm(i+1, &rpm);
-    hw_positions_[i] += static_cast<double>(motor_direction * rpm) * 2.0 * M_PI / 60.0 * period.seconds();
-    hw_velocities_[i] = static_cast<double>(motor_direction * rpm) * 2.0 * M_PI / 60.0;
-
-    int torque = 0;
-    //serial_port_->readTorque(i+1, &torque);
-    hw_efforts_[i] = static_cast<double>(motor_direction * torque) / 1000.0 * BlvComunicator::BLV_RATED_TORQUE;
-
-    RCLCPP_INFO(
-      rclcpp::get_logger("IsaacSystem"),
-      "Got position state %.5f and velocity state %.5f for '%s'!", hw_positions_[i],
-      hw_velocities_[i], info_.joints[i].name.c_str());
+    float rad = 0.0f;
+    shm.readRad(i, &rad);
+    hw_positions_[i] = static_cast<double>(rad);
+    float radps = 0.0f;
+    shm.readRadps(i, &radps);
+    hw_velocities_[i] = static_cast<double>(radps);
+    float torque = 0.0f;
+    shm.readTorque(i, &torque);
+    hw_efforts_[i] = static_cast<double>(torque);
   }
 
   return hardware_interface::return_type::OK;
@@ -193,32 +179,11 @@ hardware_interface::return_type IsaacSystem::read(const rclcpp::Time & time, con
 
 hardware_interface::return_type IsaacSystem::write(const rclcpp::Time & time, const rclcpp::Duration & period)
 {
-  RCLCPP_INFO(rclcpp::get_logger("IsaacSystem"), "Writing...");
-
-  int motor_direction;
   for (auto i = 0u; i < hw_commands_.size(); i++)
   {
-    if (i % 2 == 0)
-    {
-      motor_direction = 1;
-    }
-    else
-    {
-      motor_direction = -1;
-    }
-
     // Generate the motor command message
-    int rpm = motor_direction * static_cast<int>(hw_commands_[i] * 60.0 / (2.0 * M_PI));
-
-    std::cout << "rpm[" << i << "] = " << rpm << std::endl;
-    //serial_port_->writeRpm(i+1, rpm);
-    
-    // Simulate sending commands to the hardware
-    RCLCPP_INFO(
-      rclcpp::get_logger("IsaacSystem"), "Got command %.5f for '%s'!", hw_commands_[i],
-      info_.joints[i].name.c_str());
+    shm.writeRadps(i, hw_commands_[i]);
   }
-  RCLCPP_INFO(rclcpp::get_logger("IsaacSystem"), "Joints successfully written!");
 
   return hardware_interface::return_type::OK;
 }

@@ -17,7 +17,6 @@ find_package(pluginlib REQUIRED)
 find_package(rclcpp REQUIRED)
 find_package(rclcpp_lifecycle REQUIRED)
 
-
 ## COMPILE
 add_library(
   ${PROJECT_NAME}
@@ -29,6 +28,10 @@ target_include_directories(
   ${PROJECT_NAME}
   PRIVATE
   include
+)
+target_link_libraries(
+  ${PROJECT_NAME}
+  rt
 )
 ament_target_dependencies(
   ${PROJECT_NAME}

@@ -70,8 +70,10 @@ private:
   std::vector<double> hw_positions_;
   std::vector<double> hw_velocities_;
   std::vector<double> hw_efforts_;
+  
+  ShmComunicator shm;
 };
 
-}  // namespace blv_diffbot_hardware
+}  // namespace isaac_ros2_control
 
 #endif  // ISAAC_ROS2_CONTROL__ISAAC_SYSTEM_HPP_

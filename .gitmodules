@@ -1,3 +1,18 @@
 [submodule "colcon_ws/src/xacro"]
 	path = colcon_ws/src/xacro
 	url = https://github.com/ros/xacro.git
+[submodule "colcon_ws/src/joint_state_publisher"]
+	path = colcon_ws/src/joint_state_publisher
+	url = https://github.com/ros/joint_state_publisher.git
+[submodule "colcon_ws/src/ros2_control"]
+	path = colcon_ws/src/ros2_control
+	url = https://github.com/ros-controls/ros2_control.git
+[submodule "colcon_ws/src/control_msgs"]
+	path = colcon_ws/src/control_msgs
+	url = https://github.com/ros-controls/control_msgs.git
+[submodule "colcon_ws/src/backward_ros"]
+	path = colcon_ws/src/backward_ros
+	url = https://github.com/pal-robotics/backward_ros.git
+[submodule "colcon_ws/src/realtime_tools"]
+	path = colcon_ws/src/realtime_tools
+	url = https://github.com/ros-controls/realtime_tools.git

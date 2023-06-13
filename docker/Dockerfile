@@ -45,8 +45,6 @@ RUN mkdir -p ~/ros2_humble/src && \
     colcon build --symlink-install
 
 RUN echo 'source /root/ros2_humble/install/setup.bash' >> ~/.bashrc
-
-#ENV NVIDIA_VISIBLE_DEVICES ${NVIDIA_VISIBLE_DEVICES:-all}
-#ENV NVIDIA_DRIVER_CAPABILITIES ${NVIDIA_DRIVER_CAPABILITIES:+$NVIDIA_DRIVER_CAPABILITIES,}graphics
+#RUN echo 'source /isaac-sim/setup_python_env.sh' >> ~/.bashrc
 
 ENTRYPOINT ["/bin/bash"]

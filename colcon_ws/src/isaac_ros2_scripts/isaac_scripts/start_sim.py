@@ -150,16 +150,20 @@ def main():
     distantLight.CreateIntensityAttr(500)
 
     urdf_root = ET.parse(args.path).getroot()
-    urdf_joints = []
     robot_name = None
     for child in urdf_root.iter("robot"):
         robot_name = child.attrib["name"]
         break
+    urdf_joints = []
     for child in urdf_root.findall('.//ros2_control/joint'):
         print(child.attrib["name"])
         urdf_joints.append(child)
 
-    joint_type =[]
+    joint_name = []
+    for joint in urdf_joints:
+        joint_name.append(joint.attrib["name"])
+
+    joint_type = []
     for joint in urdf_joints:
         for child in urdf_root.findall('./joint'):
             if child.attrib["name"] == joint.attrib["name"]:
@@ -207,12 +211,13 @@ def main():
                 # In this case because we want to do velocity control this should be set to zero
                 drive[index].GetStiffnessAttr().Set(0)
                 
+                dof_ptr = dc.find_articulation_dof(art, joint_name[index])
                 # read position
-                #clsMMap.WriteFloat(4*index+1, pos)
+                clsMMap.WriteFloat(4*index+1, dc.get_dof_position(dof_ptr))
                 # read velocity
-                #clsMMap.WriteFloat(4*index+2, vel)
+                clsMMap.WriteFloat(4*index+2, dc.get_dof_velocity(dof_ptr))
                 # read effort
-                #clsMMap.WriteFloat(4*index+3, eff)
+                clsMMap.WriteFloat(4*index+3, dc.get_dof_effort(dof_ptr))
 
             kit.update()
     except:

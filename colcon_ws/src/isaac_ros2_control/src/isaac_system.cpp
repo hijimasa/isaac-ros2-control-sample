@@ -36,6 +36,7 @@ CallbackReturn IsaacSystem::on_init(const hardware_interface::HardwareInfo & inf
   hw_velocities_.resize(info_.joints.size(), std::numeric_limits<double>::quiet_NaN());
   hw_efforts_.resize(info_.joints.size(), std::numeric_limits<double>::quiet_NaN());
   hw_commands_.resize(info_.joints.size(), std::numeric_limits<double>::quiet_NaN());
+  old_rad_.resize(info_.joints.size(), 0.0f);
 
   for (const hardware_interface::ComponentInfo & joint : info_.joints)
   {
@@ -164,14 +165,30 @@ hardware_interface::return_type IsaacSystem::read(const rclcpp::Time & time, con
   for (uint i = 0; i < hw_commands_.size(); i++)
   {
     float rad = 0.0f;
+    float diff_rad = 0.0f;
     shm.readRad(i, &rad);
-    hw_positions_[i] = static_cast<double>(rad);
+    if (fabs(rad - old_rad_[i]) < 3.14f)
+    {
+      diff_rad = rad - old_rad_[i];
+    }
+    else
+    {
+      diff_rad = rad + old_rad_[i];
+    }
+    old_rad_[i] = rad;
+    hw_positions_[i] += static_cast<double>(diff_rad);
     float radps = 0.0f;
     shm.readRadps(i, &radps);
     hw_velocities_[i] = static_cast<double>(radps);
     float torque = 0.0f;
     shm.readTorque(i, &torque);
     hw_efforts_[i] = static_cast<double>(torque);
+/*
+    RCLCPP_INFO(
+      rclcpp::get_logger("IsaacSystem"),
+      "Got position state %.5f and velocity state %.5f for '%s'!", hw_positions_[i],
+      hw_velocities_[i], info_.joints[i].name.c_str());
+*/
   }
 
   return hardware_interface::return_type::OK;

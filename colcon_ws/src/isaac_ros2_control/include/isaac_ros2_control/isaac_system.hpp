@@ -71,6 +71,8 @@ private:
   std::vector<double> hw_velocities_;
   std::vector<double> hw_efforts_;
   
+  std::vector<float> old_rad_;
+
   ShmComunicator shm;
 };
 

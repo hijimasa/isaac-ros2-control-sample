@@ -10,6 +10,7 @@ The features of this repository are below:
 - This shows how to control a robot on Isaac Sim with ros2_control.
 - This provides a Dockerfile where Isaac Sim and ROS2 Humble can coexist.
 - This currently supports only rotational joints using velocity control.
+- This sends joint status (position, velocity and effort) to ros2_control from Isaac Sim.
 
 ## Prerequisite
 1. Docker
@@ -56,6 +57,3 @@ The features of this repository are below:
    docker exec -it isaac-sim /bin/bash
    ros2 run teleop_twist_keyboard teleop_twist_keyboard
    ```
-
-## TODO
-- I would like to add the feedback about wheeel's position and velocity from Isaac Sim.

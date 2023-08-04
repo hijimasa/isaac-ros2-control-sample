@@ -57,7 +57,7 @@ RUN mkdir -p ~/ros2_humble/src && \
     rosdep install --from-paths src --ignore-src -y --skip-keys "fastcdr rti-connext-dds-6.0.1 urdfdom_headers" && \
     colcon build --symlink-install
 
-#RUN echo 'source /root/ros2_humble/install/setup.bash' >> ~/.bashrc
+RUN echo 'source /root/ros2_humble/install/setup.bash' >> ~/.bashrc
 #RUN echo 'source /isaac-sim/setup_python_env.sh' >> ~/.bashrc
 
 ENTRYPOINT ["/bin/bash"]

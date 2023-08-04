@@ -9,9 +9,14 @@
   <!-- Import diffbot ros2_control description -->
   <xacro:include filename="$(find diffbot_description)/ros2_control/diffbot.ros2_control.xacro" />
 
+  <!-- Import diffbot isaac description -->
+  <xacro:include filename="$(find diffbot_description)/isaac/diffbot.isaac.xacro" />
+
   <xacro:diffbot prefix="$(arg prefix)" use_sim="$(arg use_sim)"/>
 
   <xacro:diffbot_ros2_control
     name="diffbot" prefix="$(arg prefix)" use_sim="$(arg use_sim)" />
+
+  <xacro:diffbot_isaac prefix="$(arg prefix)"/>
     
 </robot>

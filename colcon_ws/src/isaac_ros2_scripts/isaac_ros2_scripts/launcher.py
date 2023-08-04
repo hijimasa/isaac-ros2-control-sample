@@ -23,6 +23,13 @@ class SimLancher(Node):
         command = ["bash", python_script, start_script, 
                     "-p", urdf_path]
         print(command)
+        del os.environ["PATH"]
+        del os.environ["LD_LIBRARY_PATH"]
+        del os.environ["PYTHONPATH"]
+        del os.environ["CMAKE_PREFIX_PATH"]
+        del os.environ["AMENT_PREFIX_PATH"]
+        del os.environ["PKG_CONFIG_PATH"]
+        os.environ["FASTRTPS_DEFAULT_PROFILES_FILE"]="~/colcon_ws/fastdds.xml"
         self.proc = subprocess.Popen(command)        
     
         timer_period = 0.01  # sec

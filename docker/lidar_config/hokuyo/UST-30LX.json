@@ -1,0 +1,58 @@
+{
+    "class": "sensor",
+    "type": "lidar",
+    "name": "UST-30LX",
+    "driveWorksId": "GENERIC",
+    "profile":
+    {
+      "scanType": "rotary",
+      "intensityProcessing": "normalization",
+      "rayType": "IDEALIZED",
+      "nearRangeM": 0.05,
+      "farRangeM": 30.0,
+  
+      "startAzimuthDeg": -135.0,
+      "endAzimuthDeg": 135.0,
+  
+      "upElevationDeg": 0.0,
+      "downElevationDeg": 0.0,
+  
+      "rangeResolutionM": 0.001,
+  
+      "rangeAccuracyM": 0.04,
+  
+      "avgPowerW": 3.6,
+      "minReflectance": 0.1,
+      "minReflectanceRange": 120.0,
+      "wavelengthNm": 905.0,
+      "pulseTimeNs": 23,
+
+      "azimuthErrorMean": 0.0,
+      "azimuthErrorStd": 0.000,
+      "elevationErrorMean": 0.0,
+      "elevationErrorStd": 0.0000,
+  
+  
+      "reportTypes": "Strongest, Last, Dual",
+      "maxReturns": 1,
+  
+      "scanRatesHz": [40.0],
+      "scanRateBaseHz": 40.0,
+  
+      "reportRateBaseHz": 36000,
+  
+      "numberOfEmitters": 1,
+  
+      "emitters":
+      {
+        "azimuthDeg": [0],
+        "elevationDeg": [0],
+        "fireTimeNs": [0]
+
+      },
+  
+      "intensityMappingType": "LINEAR"
+    }
+}
+
+

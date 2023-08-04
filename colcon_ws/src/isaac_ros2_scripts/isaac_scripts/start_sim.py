@@ -1,4 +1,5 @@
 import os
+import time
 import mmap
 import sys
 import math
@@ -6,6 +7,7 @@ import struct
 import argparse
 from omni.isaac.kit import SimulationApp
 import xml.etree.ElementTree as ET 
+import inspect
 
 def get_args():
     parser = argparse.ArgumentParser(description='This is sample argparse script')
@@ -72,13 +74,25 @@ class classMMap:
     def __del__(self):
         self._mm.close()
         
-def search_prim_path(target_dict:dict, path:str, target_name:str):
+def search_joint_prim_path(target_dict:dict, path:str, target_name:str):
     if target_dict["A_joint"] == target_name:
         path = path + target_name
         return path
     path = path + target_dict["B_link"] + "/"
     for child in target_dict["B_node"]:
-        ret = search_prim_path(child, path, target_name)
+        ret = search_joint_prim_path(child, path, target_name)
+        if not ret == None:
+            return ret
+    return None
+
+def search_link_prim_path(target_dict:dict, path:str, target_name:str):
+    if target_dict["B_link"] == target_name:
+        path = path + target_name
+        return path
+    if "A_link" in target_dict:
+        path = path + target_dict["A_link"] + "/"
+    for child in target_dict["B_node"]:
+        ret = search_link_prim_path(child, path, target_name)
         if not ret == None:
             return ret
     return None
@@ -88,8 +102,28 @@ def main():
     
     clsMMap = classMMap()
 
+    
     # URDF import, configuration and simulation sample
     kit = SimulationApp({"renderer": "RayTracedLighting", "headless": False})
+
+    import omni
+    from omni.isaac.core.utils.extensions import enable_extension, disable_extension
+    from omni.isaac.core import SimulationContext, World
+    from omni.isaac.core.utils import stage, nucleus
+    from omni.isaac.core.utils.render_product import create_hydra_texture
+    import omni.kit.viewport.utility
+    import omni.replicator.core as rep
+    from omni.isaac.sensor import LidarRtx
+    
+    disable_extension("omni.isaac.ros_bridge")
+    kit.update()
+    disable_extension("omni.isaac.ros2_bridge")
+    kit.update()
+    enable_extension("omni.isaac.ros2_bridge-humble")    
+    kit.update()
+    
+    my_world = World(stage_units_in_meters=1.0)
+
     import omni.kit.commands
     from omni.isaac.urdf import _urdf
     urdf_interface = _urdf.acquire_urdf_interface()
@@ -101,8 +135,9 @@ def main():
     import_config.merge_fixed_joints = False
     import_config.convex_decomp = False
     import_config.import_inertia_tensor = True
+    import_config.self_collision = False
     import_config.fix_base = False
-    import_config.distance_scale = 100
+    import_config.distance_scale = 1
 
     # Import URDF, stage_path contains the path the path to the usd prim in the stage.
     status, stage_path = omni.kit.commands.execute(
@@ -117,6 +152,7 @@ def main():
         import_config=import_config,
     )
     kinematics_chain = urdf_interface.get_kinematic_chain(urdf)
+    
     # Get stage handle
     stage = omni.usd.get_context().get_stage()
 
@@ -141,7 +177,7 @@ def main():
         planePath="/groundPlane",
         axis="Z",
         size=1500.0,
-        position=Gf.Vec3f(0, 0, -20),
+        position=Gf.Vec3f(0, 0, -0.1),
         color=Gf.Vec3f(0.5),
     )
 
@@ -156,7 +192,6 @@ def main():
         break
     urdf_joints = []
     for child in urdf_root.findall('.//ros2_control/joint'):
-        print(child.attrib["name"])
         urdf_joints.append(child)
 
     joint_name = []
@@ -175,8 +210,41 @@ def main():
 
     joints_prim_paths = []
     for joint in urdf_joints:
-        joints_prim_paths.append(search_prim_path(kinematics_chain, "/" + robot_name + "/", joint.attrib["name"]))
+        joints_prim_paths.append(search_joint_prim_path(kinematics_chain, "/" + robot_name + "/", joint.attrib["name"]))
         
+    urdf_lidars = []
+    for child in urdf_root.findall('.//isaac/sensor'):        
+        if child.attrib["type"] == "lidar":
+            urdf_lidars.append(child)
+            prim_path = search_link_prim_path(kinematics_chain, "/" + robot_name + "/", child.attrib["name"])
+
+            _, my_lidar = omni.kit.commands.execute(
+                "IsaacSensorCreateRtxLidar",
+                path="/Lidar",
+                parent=prim_path,
+                config=child.find("config").text,
+                translation=(0.0, 0, 0.0),
+                orientation=Gf.Quatd(0.5, 0.5, -0.5, -0.5),
+            )
+            # RTX sensors are cameras and must be assigned to their own render product
+            _, render_product_path = create_hydra_texture([1, 1], my_lidar.GetPath().pathString)
+
+            # For Debug
+            #writer = rep.writers.get("RtxLidar" + "DebugDrawPointCloud")
+            #writer.attach([render_product_path])
+
+            if int(child.find("sensor_dimension_num").text) == 2:
+                # Create LaserScan publisher pipeline in the post process graph
+                writer = rep.writers.get("RtxLidar" + "ROS2PublishLaserScan")
+                writer.initialize(topicName=prim_path + "/" + child.find("topic").text, frameId=child.attrib["name"])
+                writer.attach([render_product_path])
+            else:
+                # Create Point cloud publisher pipeline in the post process graph
+                writer = rep.writers.get("RtxLidar" + "ROS2PublishPointCloud")
+                writer.initialize(topicName=prim_path + "/" + child.find("topic").text, frameId=child.attrib["name"])
+                writer.attach([render_product_path])
+                
+            kit.update()
 
     drive = []
     for index in range(len(joints_prim_paths)):
@@ -184,6 +252,8 @@ def main():
 
     # dynamic control can also be used to interact with the imported urdf.
     dc = _dynamic_control.acquire_dynamic_control_interface()
+
+    simulation_context = SimulationContext(physics_dt=1.0 / 60.0, rendering_dt=1.0 / 60.0, stage_units_in_meters=1.0)
 
     # Start simulation
     omni.timeline.get_timeline_interface().play()
@@ -201,7 +271,6 @@ def main():
             for index in range(len(joints_prim_paths)):
                 radps = clsMMap.ReadFloat(4*index);
                 # Set the velocity drive target in degrees/second
-                print(radps * 180 / math.pi)
                 drive[index].GetTargetVelocityAttr().Set(radps * 180 / math.pi)
 
                 # Set the drive damping, which controls the strength of the velocity drive
@@ -220,6 +289,7 @@ def main():
                 clsMMap.WriteFloat(4*index+3, dc.get_dof_effort(dof_ptr))
 
             kit.update()
+            #time.sleep(1) #For Debug
     except:
         # Shutdown and exit
         omni.timeline.get_timeline_interface().stop()

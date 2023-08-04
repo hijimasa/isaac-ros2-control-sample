@@ -57,3 +57,6 @@ The features of this repository are below:
    docker exec -it isaac-sim /bin/bash
    ros2 run teleop_twist_keyboard teleop_twist_keyboard
    ```
+
+# Bug
+- LaserScan topic do not published when 2D Lidar config file is used.

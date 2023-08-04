@@ -120,6 +120,8 @@
     <origin xyz="0 0 0.2" rpy="0 0 0"/>
   </joint>
   <link name="lidar_link">
+    <!-- If visual tag is enable, lidar's ray is blocked. -->
+    <!--
     <visual>
       <origin xyz="0 0 0" rpy="0 0 0" />
       <geometry>
@@ -127,6 +129,7 @@
       </geometry>
       <material name="white" />
     </visual>
+    -->
   </link>
 
   <joint name="camera_joint" type="fixed">
@@ -135,6 +138,8 @@
     <origin xyz="0.05 -0.1 0.1" rpy="0 0 0"/>
   </joint>
   <link name="camera_link">
+    <!-- If visual tag is enable, camera's view is blocked. -->
+    <!--
     <visual>
       <origin xyz="0 0 0" rpy="0 -1.57 0" />
       <geometry>
@@ -142,6 +147,7 @@
       </geometry>
       <material name="white" />
     </visual>
+    -->
   </link>
 
   <joint name="depth_camera_joint" type="fixed">
@@ -150,6 +156,8 @@
     <origin xyz="0.05 0.1 0.1" rpy="0 0 0"/>
   </joint>
   <link name="depth_camera_link">
+    <!-- If visual tag is enable, camera's view is blocked. -->
+    <!--
     <visual>
       <origin xyz="0 0 0" rpy="0 -1.57 0" />
       <geometry>
@@ -157,6 +165,7 @@
       </geometry>
       <material name="white" />
     </visual>
+    -->
   </link>
 
   </xacro:macro>

@@ -15,4 +15,5 @@ docker run --name isaac-sim --entrypoint bash -it --gpus all -e "ACCEPT_EULA=Y" 
     -v /tmp/.X11-unix:/tmp/.X11-unix \
     --workdir="/root/colcon_ws" \
     --volume="$(pwd)/../colcon_ws:/root/colcon_ws" \
+    --volume="$(pwd)/lidar_config/hokuyo:/isaac-sim/exts/omni.isaac.sensor/data/lidar_configs/hokuyo" \
     isaac-ros2-image:latest	

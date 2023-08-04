@@ -15,6 +15,7 @@ msg/*Result.msg
 msg/_*.py
 build_isolated/
 devel_isolated/
+colcon_ws/build/
 colcon_ws/install/
 colcon_ws/log/
 

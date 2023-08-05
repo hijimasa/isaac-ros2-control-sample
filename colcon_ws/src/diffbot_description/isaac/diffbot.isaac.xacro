@@ -7,7 +7,7 @@
     <isaac>
       <sensor name="lidar_link" type="lidar">
         <topic>scan</topic>
-        <sensor_dimension_num>2</sensor_dimension_num> <!-- 2 or 3 -->
+        <sensor_dimension_num>3</sensor_dimension_num> <!-- 2 or 3 -->
         <config>Example_Rotary</config>
         <!-- Config Example
         <config>Example_Rotary</config>

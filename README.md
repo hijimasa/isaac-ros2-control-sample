@@ -3,6 +3,8 @@
   ![ros2_control_demo](figs/shm_movie-2023-06-13_21.52.52.gif)
 - LiDAR output Demo
   ![lidar_output_demo](figs/shm_movie-2023-08-05_13.14.29.gif)
+- Camera output Demo
+  ![camera_output_demo](figs/shm_movie-2023-08-11_23.57.19.gif)
 
 This repository shows how to control the robot from ros2_control to make Isaac Sim easier to use.
 Important packages are "isaac_ros2_control" and "isaac_ros2_scripts". 
@@ -15,7 +17,7 @@ The features of this repository are below:
 - This provides a Dockerfile where Isaac Sim and ROS2 Humble can coexist.
 - This currently supports only rotational joints using velocity control.
 - This sends joint status (position, velocity and effort) to ros2_control from Isaac Sim.
-- This launches sensors from URDF description (Now support LiDAR only).
+- This launches sensors from URDF description.
 
 ## Prerequisite
 1. Docker
@@ -65,6 +67,5 @@ The features of this repository are below:
 
 ## Bug
 - LaserScan topic do not published when 2D Lidar config file is used.
+- You should uncheck "Normarize Image" in your depth topic in RViz2 if you get black depth image.
 
-## TODO
-- Support launching camera and depth camera from URDF description.

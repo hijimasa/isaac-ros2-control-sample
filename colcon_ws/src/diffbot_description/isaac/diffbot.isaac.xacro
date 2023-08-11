@@ -17,48 +17,39 @@
       </sensor>
 
       <sensor name="camera_link" type="camera">
+        <topic>image_raw</topic>
+        <horizontal_fov_rad>1.3962634</horizontal_fov_rad>
+        <horizontal_focal_length>30</horizontal_focal_length> <!-- optical parameter -->
+        <vertical_focal_length>30</vertical_focal_length> <!-- optical parameter -->
+        <focus_distance>400</focus_distance> <!-- distance for clear image -->
+        <projection>perspective</projection> <!-- perspective or orthgonal -->
+        <image>
+           <width>600</width>
+           <height>600</height>
+        </image>
+        <clip>
+          <near>0.02</near>
+          <far>300</far>
+        </clip>
         <update_rate>10.0</update_rate>
-        <always_on>true</always_on>
-        <ignition_frame_id>camera_link</ignition_frame_id>
-        <pose>0 0 0 0 0 0</pose>
-        <topic>/image_raw</topic>
-        <camera name="diff_bot_camera">
-          <!--
-          <triggered>true</triggered>
-          <trigger_topic>/trigger</trigger_topic>
-          -->
-          <horizontal_fov>1.3962634</horizontal_fov>
-          <image>
-             <width>600</width>
-             <height>600</height>
-             <format>R8G8B8</format>
-          </image>
-          <clip>
-            <near>0.02</near>
-            <far>300</far>
-          </clip>
-        </camera>
       </sensor>
 
       <sensor name="depth_camera_link" type="depth_camera">
-        <ignition_frame_id>depth_camera_link</ignition_frame_id>
-        <pose>0 0 0 0 0 0</pose>
-        <camera>
-          <horizontal_fov>1.047</horizontal_fov>
-          <image>
-            <width>320</width>
-            <height>240</height>
-            <format>R_FLOAT32</format>
-          </image>
-          <clip>
-            <near>0.1</near>
-            <far>100</far>
-          </clip>
-        </camera>
-        <always_on>true</always_on>
+        <topic>image_raw</topic>
+        <horizontal_fov_rad>1.3962634</horizontal_fov_rad>
+        <horizontal_focal_length>30</horizontal_focal_length> <!-- optical parameter -->
+        <vertical_focal_length>30</vertical_focal_length> <!-- optical parameter -->
+        <focus_distance>400</focus_distance> <!-- distance for clear image -->
+        <projection>perspective</projection> <!-- perspective or orthgonal -->
+        <image>
+          <width>320</width>
+          <height>240</height>
+        </image>
+        <clip>
+          <near>0.1</near>
+          <far>100</far>
+        </clip>
         <update_rate>10</update_rate>
-        <visualize>true</visualize>
-        <topic>depth_camera/image_raw</topic>
       </sensor>
     </isaac>
 

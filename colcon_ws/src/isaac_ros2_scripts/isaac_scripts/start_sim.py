@@ -1,5 +1,4 @@
 import os
-import time
 import mmap
 import sys
 import math
@@ -8,6 +7,8 @@ import argparse
 from omni.isaac.kit import SimulationApp
 import xml.etree.ElementTree as ET 
 import inspect
+
+Frame_per_Second = 60.0
 
 def get_args():
     parser = argparse.ArgumentParser(description='This is sample argparse script')
@@ -109,12 +110,18 @@ def main():
     import omni
     from omni.isaac.core.utils.extensions import enable_extension, disable_extension
     from omni.isaac.core import SimulationContext, World
-    from omni.isaac.core.utils import stage, nucleus
+    from omni.isaac.core.utils import stage, extensions, nucleus
     from omni.isaac.core.utils.render_product import create_hydra_texture
     import omni.kit.viewport.utility
     import omni.replicator.core as rep
-    from omni.isaac.sensor import LidarRtx
-    
+    #from omni.isaac.sensor import LidarRtx, Camera
+    #import omni.isaac.core.utils.numpy.rotations as rot_utils
+    #import numpy as np
+    from pxr import Gf, UsdGeom, Usd
+    from omni.kit.viewport.utility import get_active_viewport, get_viewport_from_window_name
+    import omni.graph.core as og
+    from omni.isaac.core.utils.prims import set_targets
+
     disable_extension("omni.isaac.ros_bridge")
     kit.update()
     disable_extension("omni.isaac.ros2_bridge")
@@ -154,16 +161,16 @@ def main():
     kinematics_chain = urdf_interface.get_kinematic_chain(urdf)
     
     # Get stage handle
-    stage = omni.usd.get_context().get_stage()
+    stage_handle = omni.usd.get_context().get_stage()
 
     # Enable physics
-    scene = UsdPhysics.Scene.Define(stage, Sdf.Path("/physicsScene"))
+    scene = UsdPhysics.Scene.Define(stage_handle, Sdf.Path("/physicsScene"))
     # Set gravity
     scene.CreateGravityDirectionAttr().Set(Gf.Vec3f(0.0, 0.0, -1.0))
     scene.CreateGravityMagnitudeAttr().Set(9.81)
     # Set solver settings
-    PhysxSchema.PhysxSceneAPI.Apply(stage.GetPrimAtPath("/physicsScene"))
-    physxSceneAPI = PhysxSchema.PhysxSceneAPI.Get(stage, "/physicsScene")
+    PhysxSchema.PhysxSceneAPI.Apply(stage_handle.GetPrimAtPath("/physicsScene"))
+    physxSceneAPI = PhysxSchema.PhysxSceneAPI.Get(stage_handle, "/physicsScene")
     physxSceneAPI.CreateEnableCCDAttr(True)
     physxSceneAPI.CreateEnableStabilizationAttr(True)
     physxSceneAPI.CreateEnableGPUDynamicsAttr(False)
@@ -173,7 +180,7 @@ def main():
     # Add ground plane
     omni.kit.commands.execute(
         "AddGroundPlaneCommand",
-        stage=stage,
+        stage=stage_handle,
         planePath="/groundPlane",
         axis="Z",
         size=1500.0,
@@ -182,7 +189,7 @@ def main():
     )
 
     # Add lighting
-    distantLight = UsdLux.DistantLight.Define(stage, Sdf.Path("/DistantLight"))
+    distantLight = UsdLux.DistantLight.Define(stage_handle, Sdf.Path("/DistantLight"))
     distantLight.CreateIntensityAttr(500)
 
     urdf_root = ET.parse(args.path).getroot()
@@ -212,10 +219,9 @@ def main():
     for joint in urdf_joints:
         joints_prim_paths.append(search_joint_prim_path(kinematics_chain, "/" + robot_name + "/", joint.attrib["name"]))
         
-    urdf_lidars = []
+    viewportId = 1
     for child in urdf_root.findall('.//isaac/sensor'):        
         if child.attrib["type"] == "lidar":
-            urdf_lidars.append(child)
             prim_path = search_link_prim_path(kinematics_chain, "/" + robot_name + "/", child.attrib["name"])
 
             _, my_lidar = omni.kit.commands.execute(
@@ -246,14 +252,248 @@ def main():
                 
             kit.update()
 
+        if child.attrib["type"] == "camera":
+            image_height = int(child.find("image/height").text)
+            image_width = int(child.find("image/width").text)
+            aspect_ratio = float(image_width) / float(image_height)
+            horizontal_fov_rad = float(child.find("horizontal_fov_rad").text)
+            horizontal_focal_length = float(child.find("horizontal_focal_length").text)
+            vertical_focal_length = float(child.find("vertical_focal_length").text)
+            focus_distance = float(child.find("focus_distance").text)
+            
+            horizontal_aperture = math.tan(horizontal_fov_rad / 2.0) * 2.0 * horizontal_focal_length
+            vertical_aperture = math.tan(horizontal_fov_rad / aspect_ratio / 2.0) * 2.0 * vertical_focal_length
+            
+            prim_path = search_link_prim_path(kinematics_chain, "/" + robot_name + "/", child.attrib["name"])
+
+            # Creating a Camera prim
+            camera_prim = UsdGeom.Camera(omni.usd.get_context().get_stage().DefinePrim(prim_path + "/Camera", "Camera"))
+            xform_api = UsdGeom.XformCommonAPI(camera_prim)
+            xform_api.SetTranslate(Gf.Vec3d(0, 0, 0))
+            xform_api.SetRotate((90, 0, -90), UsdGeom.XformCommonAPI.RotationOrderXYZ)
+            camera_prim.GetHorizontalApertureAttr().Set(horizontal_aperture)
+            camera_prim.GetVerticalApertureAttr().Set(vertical_aperture)
+            camera_prim.GetProjectionAttr().Set(child.find("projection").text)
+            camera_prim.GetFocalLengthAttr().Set(horizontal_focal_length)
+            camera_prim.GetFocusDistanceAttr().Set(focus_distance)
+            camera_prim.GetClippingRangeAttr().Set((float(child.find("clip/near").text), float(child.find("clip/far").text)))
+
+            kit.update()
+
+            # Creating an on-demand push graph with cameraHelper nodes to generate ROS image publishers
+            keys = og.Controller.Keys
+            (ros_camera_graph, _, _, _) = og.Controller.edit(
+                {
+                    "graph_path": prim_path + "/Camera_Graph",
+                    "evaluator_name": "push",
+                    "pipeline_stage": og.GraphPipelineStage.GRAPH_PIPELINE_STAGE_ONDEMAND,
+                },
+                {
+                    keys.CREATE_NODES: [
+                        ("OnTick", "omni.graph.action.OnTick"),
+                        ("createViewport", "omni.isaac.core_nodes.IsaacCreateViewport"),
+                        ("getRenderProduct", "omni.isaac.core_nodes.IsaacGetViewportRenderProduct"),
+                        ("setCamera", "omni.isaac.core_nodes.IsaacSetCameraOnRenderProduct"),
+                        ("cameraHelperRgb", "omni.isaac.ros2_bridge.ROS2CameraHelper"),
+                        ("cameraHelperInfo", "omni.isaac.ros2_bridge.ROS2CameraHelper"),
+                    ],
+                    keys.CONNECT: [
+                        ("OnTick.outputs:tick", "createViewport.inputs:execIn"),
+                        ("createViewport.outputs:execOut", "getRenderProduct.inputs:execIn"),
+                        ("createViewport.outputs:viewport", "getRenderProduct.inputs:viewport"),
+                        ("getRenderProduct.outputs:execOut", "setCamera.inputs:execIn"),
+                        ("getRenderProduct.outputs:renderProductPath", "setCamera.inputs:renderProductPath"),
+                        ("setCamera.outputs:execOut", "cameraHelperRgb.inputs:execIn"),
+                        ("setCamera.outputs:execOut", "cameraHelperInfo.inputs:execIn"),
+                        ("getRenderProduct.outputs:renderProductPath", "cameraHelperRgb.inputs:renderProductPath"),
+                        ("getRenderProduct.outputs:renderProductPath", "cameraHelperInfo.inputs:renderProductPath"),
+                    ],
+                    keys.SET_VALUES: [
+                        ("createViewport.inputs:viewportId", viewportId),
+                        ("createViewport.inputs:name", prim_path + "/Viewport"),
+                        ("cameraHelperRgb.inputs:frameId", child.attrib["name"]),
+                        ("cameraHelperRgb.inputs:topicName", prim_path + "/" + child.find("topic").text),
+                        ("cameraHelperRgb.inputs:type", "rgb"),
+                        ("cameraHelperInfo.inputs:frameId", child.attrib["name"]),
+                        ("cameraHelperInfo.inputs:topicName", prim_path + "/camera_info"),
+                        ("cameraHelperInfo.inputs:type", "camera_info"),
+                    ],
+                },
+            )
+            
+            viewportId += 1
+
+            set_targets(
+                prim=stage.get_current_stage().GetPrimAtPath(prim_path + "/Camera_Graph" + "/setCamera"),
+                attribute="inputs:cameraPrim",
+                target_prim_paths=[prim_path + "/Camera"],
+            )
+
+            # Run the ROS Camera graph once to generate ROS image publishers in SDGPipeline
+            og.Controller.evaluate_sync(ros_camera_graph)
+
+            kit.update()
+
+            # Inside the SDGPipeline graph, Isaac Simulation Gate nodes are added to control the execution rate of each of the ROS image and camera info publishers.
+            # By default the step input of each Isaac Simulation Gate node is set to a value of 1 to execute every frame.
+            # We can change this value to N for each Isaac Simulation Gate node individually to publish every N number of frames.
+            viewport_api = get_viewport_from_window_name(prim_path + "/Viewport")
+            viewport_api.set_texture_resolution((image_width, image_height))
+
+            if viewport_api is not None:
+                import omni.syntheticdata._syntheticdata as sd
+
+                # Get name of rendervar for RGB sensor type
+                rv_rgb = omni.syntheticdata.SyntheticData.convert_sensor_type_to_rendervar(sd.SensorType.Rgb.name)
+
+                # Get path to IsaacSimulationGate node in RGB pipeline
+                rgb_camera_gate_path = omni.syntheticdata.SyntheticData._get_node_path(
+                    rv_rgb + "IsaacSimulationGate", viewport_api.get_render_product_path()
+                )
+
+                # Get path to IsaacSimulationGate node in CameraInfo pipeline
+                camera_info_gate_path = omni.syntheticdata.SyntheticData._get_node_path(
+                    "PostProcessDispatch" + "IsaacSimulationGate", viewport_api.get_render_product_path()
+                )
+
+                # Set Rgb execution step to 5 frames
+                rgb_step_size = int(Frame_per_Second / float(child.find("update_rate").text))
+            
+                # Set Camera info execution step to every frame
+                info_step_size = 1
+
+                # Set step input of the Isaac Simulation Gate nodes upstream of ROS publishers to control their execution rate
+                og.Controller.attribute(rgb_camera_gate_path + ".inputs:step").set(rgb_step_size)
+                og.Controller.attribute(camera_info_gate_path + ".inputs:step").set(info_step_size)
+
+            kit.update()
+
+        if child.attrib["type"] == "depth_camera":
+            image_height = int(child.find("image/height").text)
+            image_width = int(child.find("image/width").text)
+            aspect_ratio = float(image_width) / float(image_height)
+            horizontal_fov_rad = float(child.find("horizontal_fov_rad").text)
+            horizontal_focal_length = float(child.find("horizontal_focal_length").text)
+            vertical_focal_length = float(child.find("vertical_focal_length").text)
+            focus_distance = float(child.find("focus_distance").text)
+
+            horizontal_aperture = math.tan(horizontal_fov_rad / 2.0) * 2.0 * horizontal_focal_length
+            vertical_aperture = math.tan(horizontal_fov_rad / aspect_ratio / 2.0) * 2.0 * vertical_focal_length
+
+            prim_path = search_link_prim_path(kinematics_chain, "/" + robot_name + "/", child.attrib["name"])
+
+            # Creating a Camera prim
+            camera_prim = UsdGeom.Camera(omni.usd.get_context().get_stage().DefinePrim(prim_path + "/Camera", "Camera"))
+            xform_api = UsdGeom.XformCommonAPI(camera_prim)
+            xform_api.SetTranslate(Gf.Vec3d(0, 0, 0))
+            xform_api.SetRotate((90, 0, -90), UsdGeom.XformCommonAPI.RotationOrderXYZ)
+            camera_prim.GetHorizontalApertureAttr().Set(horizontal_aperture)
+            camera_prim.GetVerticalApertureAttr().Set(vertical_aperture)
+            camera_prim.GetProjectionAttr().Set(child.find("projection").text)
+            camera_prim.GetFocalLengthAttr().Set(horizontal_focal_length)
+            camera_prim.GetFocusDistanceAttr().Set(focus_distance)
+            camera_prim.GetClippingRangeAttr().Set((float(child.find("clip/near").text), float(child.find("clip/far").text)))
+
+            kit.update()
+
+            # Creating an on-demand push graph with cameraHelper nodes to generate ROS image publishers
+            keys = og.Controller.Keys
+            (ros_camera_graph, _, _, _) = og.Controller.edit(
+                {
+                    "graph_path": prim_path + "/Camera_Graph",
+                    "evaluator_name": "push",
+                    "pipeline_stage": og.GraphPipelineStage.GRAPH_PIPELINE_STAGE_ONDEMAND,
+                },
+                {
+                    keys.CREATE_NODES: [
+                        ("OnTick", "omni.graph.action.OnTick"),
+                        ("createViewport", "omni.isaac.core_nodes.IsaacCreateViewport"),
+                        ("getRenderProduct", "omni.isaac.core_nodes.IsaacGetViewportRenderProduct"),
+                        ("setCamera", "omni.isaac.core_nodes.IsaacSetCameraOnRenderProduct"),
+                        ("cameraHelperInfo", "omni.isaac.ros2_bridge.ROS2CameraHelper"),
+                        ("cameraHelperDepth", "omni.isaac.ros2_bridge.ROS2CameraHelper"),
+                    ],
+                    keys.CONNECT: [
+                        ("OnTick.outputs:tick", "createViewport.inputs:execIn"),
+                        ("createViewport.outputs:execOut", "getRenderProduct.inputs:execIn"),
+                        ("createViewport.outputs:viewport", "getRenderProduct.inputs:viewport"),
+                        ("getRenderProduct.outputs:execOut", "setCamera.inputs:execIn"),
+                        ("getRenderProduct.outputs:renderProductPath", "setCamera.inputs:renderProductPath"),
+                        ("setCamera.outputs:execOut", "cameraHelperInfo.inputs:execIn"),
+                        ("setCamera.outputs:execOut", "cameraHelperDepth.inputs:execIn"),
+                        ("getRenderProduct.outputs:renderProductPath", "cameraHelperInfo.inputs:renderProductPath"),
+                        ("getRenderProduct.outputs:renderProductPath", "cameraHelperDepth.inputs:renderProductPath"),
+                    ],
+                    keys.SET_VALUES: [
+                        ("createViewport.inputs:viewportId", viewportId),
+                        ("createViewport.inputs:name", prim_path + "/Viewport"),
+                        ("cameraHelperInfo.inputs:frameId", child.attrib["name"]),
+                        ("cameraHelperInfo.inputs:topicName", prim_path + "/camera_info"),
+                        ("cameraHelperInfo.inputs:type", "camera_info"),
+                        ("cameraHelperDepth.inputs:frameId", child.attrib["name"]),
+                        ("cameraHelperDepth.inputs:topicName", prim_path + "/" + child.find("topic").text),
+                        ("cameraHelperDepth.inputs:type", "depth"),
+                    ],
+                },
+            )
+            
+            viewportId += 1
+
+            set_targets(
+                prim=stage.get_current_stage().GetPrimAtPath(prim_path + "/Camera_Graph" + "/setCamera"),
+                attribute="inputs:cameraPrim",
+                target_prim_paths=[prim_path + "/Camera"],
+            )
+
+            # Run the ROS Camera graph once to generate ROS image publishers in SDGPipeline
+            og.Controller.evaluate_sync(ros_camera_graph)
+
+            kit.update()
+
+            # Inside the SDGPipeline graph, Isaac Simulation Gate nodes are added to control the execution rate of each of the ROS image and camera info publishers.
+            # By default the step input of each Isaac Simulation Gate node is set to a value of 1 to execute every frame.
+            # We can change this value to N for each Isaac Simulation Gate node individually to publish every N number of frames.
+            viewport_api = get_viewport_from_window_name(prim_path + "/Viewport")
+            viewport_api.set_texture_resolution((image_width, image_height))
+
+            if viewport_api is not None:
+                import omni.syntheticdata._syntheticdata as sd
+
+                # Get name of rendervar for DistanceToImagePlane sensor type
+                rv_depth = omni.syntheticdata.SyntheticData.convert_sensor_type_to_rendervar(
+                    sd.SensorType.DistanceToImagePlane.name
+                )
+
+                # Get path to IsaacSimulationGate node in Depth pipeline
+                depth_camera_gate_path = omni.syntheticdata.SyntheticData._get_node_path(
+                    rv_depth + "IsaacSimulationGate", viewport_api.get_render_product_path()
+                )
+
+                # Get path to IsaacSimulationGate node in CameraInfo pipeline
+                camera_info_gate_path = omni.syntheticdata.SyntheticData._get_node_path(
+                    "PostProcessDispatch" + "IsaacSimulationGate", viewport_api.get_render_product_path()
+                )
+            
+                # Set Depth execution step to 60 frames
+                depth_step_size = int(Frame_per_Second / float(child.find("update_rate").text))
+
+                # Set Camera info execution step to every frame
+                info_step_size = 1
+
+                # Set step input of the Isaac Simulation Gate nodes upstream of ROS publishers to control their execution rate
+                og.Controller.attribute(depth_camera_gate_path + ".inputs:step").set(depth_step_size)
+                og.Controller.attribute(camera_info_gate_path + ".inputs:step").set(info_step_size)
+
+            kit.update()
+
     drive = []
     for index in range(len(joints_prim_paths)):
-        drive.append(UsdPhysics.DriveAPI.Get(stage.GetPrimAtPath(joints_prim_paths[index]), joint_type[index]))
+        drive.append(UsdPhysics.DriveAPI.Get(stage_handle.GetPrimAtPath(joints_prim_paths[index]), joint_type[index]))
 
     # dynamic control can also be used to interact with the imported urdf.
     dc = _dynamic_control.acquire_dynamic_control_interface()
 
-    simulation_context = SimulationContext(physics_dt=1.0 / 60.0, rendering_dt=1.0 / 60.0, stage_units_in_meters=1.0)
+    simulation_context = SimulationContext(physics_dt=1.0 / Frame_per_Second, rendering_dt=1.0 / Frame_per_Second, stage_units_in_meters=1.0)
 
     # Start simulation
     omni.timeline.get_timeline_interface().play()
@@ -289,7 +529,7 @@ def main():
                 clsMMap.WriteFloat(4*index+3, dc.get_dof_effort(dof_ptr))
 
             kit.update()
-            #time.sleep(1) #For Debug
+
     except:
         # Shutdown and exit
         omni.timeline.get_timeline_interface().stop()

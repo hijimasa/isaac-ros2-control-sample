@@ -9,19 +9,13 @@ class SimLancher(Node):
     def __init__(self):
         super().__init__('sim_launcher')
 
-        self.declare_parameter('urdf_path', '')
-        urdf_path = self.get_parameter('urdf_path').get_parameter_value().string_value
-        if urdf_path == '':
-            return
-        
         self.proc = None
         
         python_script = os.path.join(
                     get_package_share_directory('isaac_ros2_scripts'), 'isaac_python.sh')
         start_script = os.path.join(
                     get_package_share_directory('isaac_ros2_scripts'), 'start_sim.py')
-        command = ["bash", python_script, start_script, 
-                    "-p", urdf_path]
+        command = ["bash", python_script, start_script]
         print(command)
         del os.environ["PATH"]
         del os.environ["LD_LIBRARY_PATH"]

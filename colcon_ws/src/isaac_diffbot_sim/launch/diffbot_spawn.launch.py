@@ -12,6 +12,7 @@ from launch.launch_description_sources import PythonLaunchDescriptionSource
 
 from launch_ros.actions import Node
 from launch_ros.substitutions import FindPackageShare
+from launch.actions import TimerAction
 
 import xacro
 
@@ -84,14 +85,49 @@ def generate_launch_description():
     isaac_launcher = Node(
         package="isaac_ros2_scripts",
         executable="launcher",
+    )
+
+    isaac_spawn_robot = Node(
+        package="isaac_ros2_scripts",
+        executable="spawn_robot",
         parameters=[{'urdf_path': str(relative_urdf_path)}],
     )
+
+    isaac_prepare_sensors = Node(
+        package="isaac_ros2_scripts",
+        executable="prepare_sensors",
+        parameters=[{'urdf_path': str(relative_urdf_path)}],
+    )
+
+    isaac_prepare_robot_controller = Node(
+        package="isaac_ros2_scripts",
+        executable="prepare_robot_controller",
+        parameters=[{'urdf_path': str(relative_urdf_path)}],
+    )
+
+    isaac_spawn_robot_timer = TimerAction(period=20.0,
+        actions=[
+            isaac_spawn_robot,
+        ])
     
     return LaunchDescription([
+        RegisterEventHandler(
+            event_handler=OnProcessExit(
+                target_action=isaac_spawn_robot,
+                on_exit=[isaac_prepare_sensors],
+            )
+        ),
+        RegisterEventHandler(
+            event_handler=OnProcessExit(
+                target_action=isaac_prepare_sensors,
+                on_exit=[isaac_prepare_robot_controller],
+            )
+        ),
         control_node,
         node_robot_state_publisher,
         joint_state_broadcaster_spawner,
         diff_drive_controller_spawner,
         velocity_converter,
         isaac_launcher,
+        isaac_spawn_robot_timer,
     ])

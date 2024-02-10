@@ -18,6 +18,8 @@ The features of this repository are below:
 - This currently supports only rotational joints using velocity control.
 - This sends joint status (position, velocity and effort) to ros2_control from Isaac Sim.
 - This launches sensors from URDF description.
+- This spawns URDF model at the desired timing.
+- This launchs sensors and controller at the desired timing.
 
 ## Prerequisite
 1. Docker
@@ -51,6 +53,7 @@ The features of this repository are below:
 
 1. Build ros2 source codes
    ```bash
+   source ../ros2_humble/install/setup.bash
    colcon build && source install/setup.bash
    ```
 
@@ -68,4 +71,8 @@ The features of this repository are below:
 ## Bug
 - LaserScan topic do not published when 2D Lidar config file is used.
 - You should uncheck "Normarize Image" in your depth topic in RViz2 if you get black depth image.
+
+## ToDo
+- Change robot spawn position
+- Allocate separate shared memory for each robot
 

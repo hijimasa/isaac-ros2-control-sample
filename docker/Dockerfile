@@ -45,7 +45,7 @@ RUN apt update && \
 RUN apt update && \
     apt-get upgrade -y -qq --no-install-recommends && \
     apt install -q -y \
-    libfmt-dev librange-v3-dev
+    libfmt-dev librange-v3-dev telnet
 RUN pip install -U pip \
     pip install -U jinja2 typeguard
 RUN mkdir -p ~/ros2_humble/src && \

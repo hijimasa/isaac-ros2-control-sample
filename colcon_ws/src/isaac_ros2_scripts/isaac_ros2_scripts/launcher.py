@@ -1,5 +1,5 @@
 import os
-import mmap
+import signal
 import rclpy
 from rclpy.node import Node
 import subprocess
@@ -12,32 +12,18 @@ class SimLancher(Node):
         self.proc = None
         
         python_script = os.path.join(
-                    get_package_share_directory('isaac_ros2_scripts'), 'isaac_python.sh')
+                    '/isaac-sim', 'python.sh')
         start_script = os.path.join(
                     get_package_share_directory('isaac_ros2_scripts'), 'start_sim.py')
         command = ["bash", python_script, start_script]
         print(command)
-        del os.environ["PATH"]
-        del os.environ["LD_LIBRARY_PATH"]
-        del os.environ["PYTHONPATH"]
-        del os.environ["CMAKE_PREFIX_PATH"]
-        del os.environ["AMENT_PREFIX_PATH"]
-        del os.environ["PKG_CONFIG_PATH"]
         os.environ["FASTRTPS_DEFAULT_PROFILES_FILE"]="~/colcon_ws/fastdds.xml"
-        self.proc = subprocess.Popen(command)        
+        self.proc = subprocess.Popen(command, preexec_fn=os.setsid)        
     
-        timer_period = 0.01  # sec
-        self.timer = self.create_timer(timer_period, self.timer_callback)
-
     def __del__(self):
         if not self.proc == None:
             if self.proc.poll() is None:
-                killcmd = "kill {pid}".format(pid=self.proc.pid)
-                subprocess.run(killcmd,shell=True)
-            
-    def timer_callback(self):
-        pass
-
+                os.killpg(os.getpgid(self.proc.pid), signal.SIGKILL)
 
 def main(args=None):
     rclpy.init(args=args)

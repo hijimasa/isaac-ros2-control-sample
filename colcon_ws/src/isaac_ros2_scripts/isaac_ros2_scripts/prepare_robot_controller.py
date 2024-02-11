@@ -8,13 +8,13 @@ class SimLancher(Node):
     def __init__(self):
         super().__init__('sim_launcher')
 
+        self.controller_proc = None
+
         self.declare_parameter('urdf_path', '')
         urdf_path = self.get_parameter('urdf_path').get_parameter_value().string_value
         if urdf_path == '':
             return
         
-        self.controller_proc = None
-
         launch_robot_controller_command_path = os.path.join(
                     get_package_share_directory('isaac_ros2_scripts'), 'launch_robot_controller_command.sh')
         temp_launch_robot_controller_command_path = os.path.join("/tmp", 'launch_robot_controller_command.sh')
@@ -30,8 +30,11 @@ class SimLancher(Node):
         command = ["bash", temp_launch_robot_controller_command_path]
         print(command)
         self.get_logger().info("command start")
-        self.controller_proc = subprocess.Popen(command)
+        self.controller_proc = subprocess.Popen(command, stdout=subprocess.PIPE)
         self.controller_proc.wait()
+        lines = self.controller_proc.stdout.read()
+        for line in lines:
+            print(line)
         self.get_logger().info("command end")
     
         timer_period = 0.01  # sec

@@ -21,19 +21,13 @@ def main():
     import omni.graph.core as og
     from omni.isaac.core.utils.prims import set_targets
 
-    disable_extension("omni.isaac.ros_bridge")
-    kit.update()
-    disable_extension("omni.isaac.ros2_bridge")
-    kit.update()
-    enable_extension("omni.isaac.ros2_bridge-humble")    
+    enable_extension("omni.isaac.ros2_bridge")    
     kit.update()
     enable_extension("omni.isaac.repl")
     
     my_world = World(stage_units_in_meters=1.0)
 
     import omni.kit.commands
-    from omni.isaac.urdf import _urdf
-    urdf_interface = _urdf.acquire_urdf_interface()
     from omni.isaac.dynamic_control import _dynamic_control
     from pxr import Sdf, Gf, UsdPhysics, UsdLux, PhysxSchema
     
@@ -77,8 +71,7 @@ def main():
     try:
         while True:
             kit.update()
-
-    finally:
+    except KeyboardInterrupt:
         # Shutdown and exit
         omni.timeline.get_timeline_interface().stop()
         kit.close()

@@ -8,12 +8,12 @@ class SimLancher(Node):
     def __init__(self):
         super().__init__('sim_launcher')
 
+        self.sensor_proc = None
+
         self.declare_parameter('urdf_path', '')
         urdf_path = self.get_parameter('urdf_path').get_parameter_value().string_value
         if urdf_path == '':
             return
-        
-        self.sensor_proc = None
 
         launch_sensor_command_path = os.path.join(
                     get_package_share_directory('isaac_ros2_scripts'), 'launch_sensor_command.sh')
@@ -30,8 +30,11 @@ class SimLancher(Node):
         command = ["bash", temp_launch_sensor_command_path]
         print(command)
         self.get_logger().info("command start")
-        self.sensor_proc = subprocess.Popen(command)
+        self.sensor_proc = subprocess.Popen(command, stdout=subprocess.PIPE)
         self.sensor_proc.wait()
+        lines = self.sensor_proc.stdout.read()
+        for line in lines:
+            print(line)
         self.get_logger().info("command end")
 
         timer_period = 0.01  # sec

@@ -1,54 +1,12 @@
-[submodule "colcon_ws/src/xacro"]
-	path = colcon_ws/src/xacro
-	url = https://github.com/ros/xacro.git
-[submodule "colcon_ws/src/joint_state_publisher"]
-	path = colcon_ws/src/joint_state_publisher
-	url = https://github.com/ros/joint_state_publisher.git
-[submodule "colcon_ws/src/ros2_control"]
-	path = colcon_ws/src/ros2_control
-	url = https://github.com/ros-controls/ros2_control.git
-[submodule "colcon_ws/src/control_msgs"]
-	path = colcon_ws/src/control_msgs
-	url = https://github.com/ros-controls/control_msgs.git
 [submodule "colcon_ws/src/backward_ros"]
 	path = colcon_ws/src/backward_ros
 	url = https://github.com/pal-robotics/backward_ros.git
-[submodule "colcon_ws/src/realtime_tools"]
-	path = colcon_ws/src/realtime_tools
-	url = https://github.com/ros-controls/realtime_tools.git
 [submodule "colcon_ws/src/ros2_teleop_keyboard"]
 	path = colcon_ws/src/ros2_teleop_keyboard
 	url = https://github.com/rohbotics/ros2_teleop_keyboard.git
-[submodule "colcon_ws/src/ros2_controllers"]
-	path = colcon_ws/src/ros2_controllers
-	url = https://github.com/ros-controls/ros2_controllers.git
-[submodule "colcon_ws/src/angles"]
-	path = colcon_ws/src/angles
-	url = https://github.com/ros/angles.git
-[submodule "colcon_ws/src/ackermann_msgs"]
-	path = colcon_ws/src/ackermann_msgs
-	url = https://github.com/ros-drivers/ackermann_msgs.git
-[submodule "colcon_ws/src/control_toolbox"]
-	path = colcon_ws/src/control_toolbox
-	url = https://github.com/ros-controls/control_toolbox.git
-[submodule "colcon_ws/src/generate_parameter_library"]
-	path = colcon_ws/src/generate_parameter_library
-	url = https://github.com/PickNikRobotics/generate_parameter_library.git
-[submodule "colcon_ws/src/RSL"]
-	path = colcon_ws/src/RSL
-	url = https://github.com/PickNikRobotics/RSL.git
-[submodule "colcon_ws/src/cpp_polyfills"]
-	path = colcon_ws/src/cpp_polyfills
-	url = https://github.com/PickNikRobotics/cpp_polyfills.git
 [submodule "colcon_ws/src/range-v3"]
 	path = colcon_ws/src/range-v3
 	url = https://github.com/ericniebler/range-v3.git
 [submodule "colcon_ws/src/rcpputils"]
 	path = colcon_ws/src/rcpputils
 	url = https://github.com/ros2/rcpputils.git
-[submodule "colcon_ws/src/kinematics_interface"]
-	path = colcon_ws/src/kinematics_interface
-	url = https://github.com/ros-controls/kinematics_interface.git
-[submodule "colcon_ws/src/teleop_twist_keyboard"]
-	path = colcon_ws/src/teleop_twist_keyboard
-	url = https://github.com/ros2/teleop_twist_keyboard.git

@@ -1,4 +1,4 @@
-FROM nvcr.io/nvidia/isaac-sim:2022.2.1
+FROM nvcr.io/nvidia/isaac-sim:2023.1.1
 
 ENV DEBIAN_FRONTEND noninteractive
 
@@ -23,41 +23,35 @@ RUN wget -O - https://apt.kitware.com/keys/kitware-archive-latest.asc 2>/dev/nul
     apt install -y -qq cmake
 
 # for ros2
-RUN curl -sSL https://raw.githubusercontent.com/ros/rosdistro/master/ros.key -o /usr/share/keyrings/ros-archive-keyring.gpg && \
-    echo "deb [arch=$(dpkg --print-architecture) signed-by=/usr/share/keyrings/ros-archive-keyring.gpg] http://packages.ros.org/ros2/ubuntu $(. /etc/os-release && echo $UBUNTU_CODENAME) main" | tee /etc/apt/sources.list.d/ros2.list > /dev/null
-RUN apt update && \
-    apt-get upgrade -y -qq --no-install-recommends && \
-    apt install -q -y \
-    python3-flake8-docstrings \
-    python3-pytest-cov \
-    ros-dev-tools && \
-    python3 -m pip install -U \
-    flake8-blind-except \
-    flake8-builtins \
-    flake8-class-newline \
-    flake8-comprehensions \
-    flake8-deprecated \
-    flake8-import-order \
-    flake8-quotes \
-    "pytest>=5.3" \
-    pytest-repeat \
-    pytest-rerunfailures
-RUN apt update && \
-    apt-get upgrade -y -qq --no-install-recommends && \
-    apt install -q -y \
-    libfmt-dev librange-v3-dev telnet
-RUN pip install -U pip \
-    pip install -U jinja2 typeguard
-RUN mkdir -p ~/ros2_humble/src && \
-    cd ~/ros2_humble && \
-    vcs import --input https://raw.githubusercontent.com/ros2/ros2/humble/ros2.repos src && \
-    apt upgrade && \
-    rosdep init && \
-    rosdep update && \
-    rosdep install --from-paths src --ignore-src -y --skip-keys "fastcdr rti-connext-dds-6.0.1 urdfdom_headers" && \
-    colcon build --symlink-install
+RUN ln -sf /usr/share/zoneinfo/Asia/Tokyo /etc/localtime
+RUN apt -y -qq update && apt -y -qq install software-properties-common mesa-utils libglu1-mesa-dev\
+  freeglut3-dev mesa-common-dev libglew-dev libglfw3-dev libglm-dev \
+  libao-dev libmpg123-dev libasio-dev && \
+  add-apt-repository universe && \
+  apt -y -qq update && apt install curl -y && \
+  curl -sSL https://raw.githubusercontent.com/ros/rosdistro/master/ros.key -o /usr/share/keyrings/ros-archive-keyring.gpg && \
+  echo "deb [arch=$(dpkg --print-architecture) signed-by=/usr/share/keyrings/ros-archive-keyring.gpg] http://packages.ros.org/ros2/ubuntu $(. /etc/os-release && echo $UBUNTU_CODENAME) main" | tee /etc/apt/sources.list.d/ros2.list > /dev/null && \
+  apt -y -qq update && \
+  apt -y -qq upgrade && \
+  apt -y -qq install ros-humble-desktop \
+    ros-humble-ament-cmake ros-humble-angles ros-humble-controller-manager \
+    ros-humble-pluginlib ros-humble-urdf ros-humble-yaml-cpp-vendor ros-humble-joint-state-pub* \
+    ros-humble-cv-bridge ros-humble-diagnostic-updater && \
+  apt-get install -y -qq ros-humble-xacro ros-humble-realtime-tools ros-humble-control-toolbox ros-humble-ros2-control* \
+    ros-humble-teleop-twist-keyboard ros-humble-vision-msgs && \
+  : "remove cache" && \
+  apt-get autoremove -y -qq && \
+  rm -rf /var/lib/apt/lists/*
+  
+RUN apt-get update && apt-get install -q -y --no-install-recommends \
+    dirmngr \
+    gnupg2 \
+    lsb-release \
+    python3-colcon-ros \
+    telnet \
+    && apt-get clean
 
-RUN echo 'source /root/ros2_humble/install/setup.bash' >> ~/.bashrc
-#RUN echo 'source /isaac-sim/setup_python_env.sh' >> ~/.bashrc
+RUN echo 'source /opt/ros/humble/setup.bash' >> ~/.bashrc
+RUN echo 'source /root/colcon_ws/install/setup.sh' >> ~/.bashrc
 
 ENTRYPOINT ["/bin/bash"]

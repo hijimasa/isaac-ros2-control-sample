@@ -8,7 +8,7 @@ from omni.isaac.kit import SimulationApp
 import xml.etree.ElementTree as ET 
 import inspect
 import omni.kit.commands
-from omni.isaac.urdf import _urdf
+from omni.importer.urdf import _urdf
 import xml.etree.ElementTree as ET 
 
 import omni
@@ -77,7 +77,7 @@ def main(urdf_path:str):
                     joint_type.append(child.attrib["type"])
                 break
 
-    stage_path = "/" + robot_name
+    stage_path = "/" + robot_name + "/base_link"
 
     joints_prim_paths = []
     for joint in urdf_joints:

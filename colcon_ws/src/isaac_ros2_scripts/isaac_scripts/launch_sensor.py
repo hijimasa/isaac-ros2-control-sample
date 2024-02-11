@@ -2,7 +2,7 @@ import sys
 import math
 import xml.etree.ElementTree as ET 
 import omni.kit.commands
-from omni.isaac.urdf import _urdf
+from omni.importer.urdf import _urdf
 
 import omni
 from omni.isaac.core.utils import stage
@@ -60,16 +60,20 @@ def main(urdf_path:str):
                 translation=(0.0, 0, 0.0),
                 orientation=Gf.Quatd(0.5, 0.5, -0.5, -0.5),
             )
-            _, render_product_path = create_hydra_texture([1, 1], my_lidar.GetPath().pathString)
+
+            hydra_texture = rep.create.render_product(my_lidar.GetPath(), [1, 1], name=child.attrib["name"])
+            #_, render_product_path = create_hydra_texture([1, 1], my_lidar.GetPath().pathString)
 
             if int(child.find("sensor_dimension_num").text) == 2:
                 writer = rep.writers.get("RtxLidar" + "ROS2PublishLaserScan")
                 writer.initialize(topicName=prim_path + "/" + child.find("topic").text, frameId=child.attrib["name"])
-                writer.attach([render_product_path])
+                writer.attach([hydra_texture])
+                #writer.attach([render_product_path])
             else:
                 writer = rep.writers.get("RtxLidar" + "ROS2PublishPointCloud")
                 writer.initialize(topicName=prim_path + "/" + child.find("topic").text, frameId=child.attrib["name"])
-                writer.attach([render_product_path])
+                writer.attach([hydra_texture])
+                #writer.attach([render_product_path])
 
         if child.attrib["type"] == "camera":
             image_height = int(child.find("image/height").text)

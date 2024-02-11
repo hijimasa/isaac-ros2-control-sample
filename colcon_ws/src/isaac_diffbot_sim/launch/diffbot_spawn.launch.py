@@ -16,6 +16,8 @@ from launch.actions import TimerAction
 
 import xacro
 
+# This is a time for Isaac Sim complete launching.
+WAIT_TIME = 30.0 #seconds
 
 def generate_launch_description():
     isaac_diffbot_description_path = os.path.join(
@@ -90,7 +92,14 @@ def generate_launch_description():
     isaac_spawn_robot = Node(
         package="isaac_ros2_scripts",
         executable="spawn_robot",
-        parameters=[{'urdf_path': str(relative_urdf_path)}],
+        parameters=[{'urdf_path': str(relative_urdf_path),
+                    'x' : 0.0,
+                    'y' : 0.0,
+                    'z' : 0.0,
+                    'R' : 0.0,
+                    'P' : 0.0,
+                    'Y' : 1.57,
+                    }],
     )
 
     isaac_prepare_sensors = Node(
@@ -105,7 +114,7 @@ def generate_launch_description():
         parameters=[{'urdf_path': str(relative_urdf_path)}],
     )
 
-    isaac_spawn_robot_timer = TimerAction(period=20.0,
+    isaac_spawn_robot_timer = TimerAction(period=WAIT_TIME,
         actions=[
             isaac_spawn_robot,
         ])

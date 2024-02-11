@@ -10,7 +10,6 @@ class SimLancher(Node):
 
         self.declare_parameter('urdf_path', '')
         urdf_path = self.get_parameter('urdf_path').get_parameter_value().string_value
-        urdf_path = "/root/colcon_ws/install/diffbot_description/share/diffbot_description/robots/diffbot.urdf"
         if urdf_path == '':
             return
         

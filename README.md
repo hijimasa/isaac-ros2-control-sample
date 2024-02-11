@@ -53,7 +53,6 @@ The features of this repository are below:
 
 1. Build ros2 source codes
    ```bash
-   source ../ros2_humble/install/setup.bash
    colcon build && source install/setup.bash
    ```
 
@@ -73,6 +72,5 @@ The features of this repository are below:
 - You should uncheck "Normarize Image" in your depth topic in RViz2 if you get black depth image.
 
 ## ToDo
-- Change robot spawn position
 - Allocate separate shared memory for each robot
 

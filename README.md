@@ -18,7 +18,7 @@ The features of this repository are below:
 - This currently supports only rotational joints using velocity control.
 - This sends joint status (position, velocity and effort) to ros2_control from Isaac Sim.
 - This launches sensors from URDF description.
-- This spawns URDF model at the desired timing.
+- This spawns URDF model at the desired timing and position.
 - This launchs sensors and controller at the desired timing.
 
 ## Prerequisite

@@ -1,6 +1,3 @@
-[submodule "colcon_ws/src/backward_ros"]
-	path = colcon_ws/src/backward_ros
-	url = https://github.com/pal-robotics/backward_ros.git
 [submodule "colcon_ws/src/ros2_teleop_keyboard"]
 	path = colcon_ws/src/ros2_teleop_keyboard
 	url = https://github.com/rohbotics/ros2_teleop_keyboard.git

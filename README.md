@@ -61,6 +61,12 @@ The features of this repository are below:
    ```bash
    ros2 launch isaac_diffbot_sim diffbot_spawn.launch.py
    ```
+   > [!NOTE]
+   > For the first time, launching Isaac Sim takes a very long time.
+   > Isaac Sim must be fully launched to spawn the robot.
+   > So you should rerun the command after Isaac Sim fully launched or change WAIT_TIME in "colcon_ws/src/isaac_diffbot_sim/launch/diffbot_spawn.launch.py"
+   > WAIT_TIME represents the time between the execution of the command and the spawn of the robot.
+   > Remember to rebuild if you change WAIT_TIME!
    - To launch teleop_twist_keyboard
    ```bash
    docker exec -it isaac-sim /bin/bash
@@ -71,6 +77,4 @@ The features of this repository are below:
 - LaserScan topic do not published when 2D Lidar config file is used.
 - You should uncheck "Normarize Image" in your depth topic in RViz2 if you get black depth image.
 
-## ToDo
-- Allocate separate shared memory for each robot
 

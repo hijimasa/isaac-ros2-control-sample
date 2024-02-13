@@ -50,9 +50,10 @@ class SimLancher(Node):
         self.get_logger().info("command start")
         self.sensor_proc = subprocess.Popen(command)
         self.sensor_proc.wait()
-        lines = self.sensor_proc.stdout.read()
-        for line in lines:
-            print(line)
+        if not self.sensor_proc.stdout == None:
+            lines = self.sensor_proc.stdout.read()
+            for line in lines:
+                print(line)
         self.get_logger().info("command end")
 
     def __del__(self):

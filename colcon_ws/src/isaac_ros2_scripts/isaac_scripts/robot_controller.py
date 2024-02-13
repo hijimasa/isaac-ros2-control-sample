@@ -34,8 +34,6 @@ def main(urdf_path:str):
     import class_mmap
     import search_joint_and_link
 
-    clsMMap = class_mmap.classMMap()
-
     urdf_interface = _urdf.acquire_urdf_interface()
 
     from omni.isaac.dynamic_control import _dynamic_control
@@ -76,6 +74,8 @@ def main(urdf_path:str):
                 else:
                     joint_type.append(child.attrib["type"])
                 break
+
+    clsMMap = class_mmap.classMMap(robot_name)
 
     stage_path = "/" + robot_name + "/base_link"
 

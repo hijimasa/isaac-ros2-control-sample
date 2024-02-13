@@ -7,9 +7,10 @@ MAP_SIZE = 4 * FLOAT_SIZE * 256 # command position velocity force
 MAP_FILE_NAME = "/dev/shm/isaac_ros2_control_data"
 
 class classMMap:
-    def __init__(self) -> None:
+    def __init__(self, robot_name:str) -> None:
         self._mm = None
-        if os.path.exists(MAP_FILE_NAME):
+        self.map_file_name_ = MAP_FILE_NAME + "_" + robot_name
+        if os.path.exists(self.map_file_name_):
             self._readMMapFile()
         else:
             self._createMMapFile()
@@ -20,7 +21,7 @@ class classMMap:
 
 
     def _createMMapFile(self):        
-        with open(MAP_FILE_NAME, mode="wb") as file:
+        with open(self.map_file_name_, mode="wb") as file:
             initStr = '00' * MAP_SIZE
             initByte = bytes.fromhex(initStr)
             file.write(initByte)
@@ -28,7 +29,7 @@ class classMMap:
         print("_createMMapFile fin.")
 
     def _readMMapFile(self):
-        with open(MAP_FILE_NAME, mode="r+b") as file:
+        with open(self.map_file_name_, mode="r+b") as file:
             self._mm = mmap.mmap(file.fileno(), 0)
             self._mm.seek(0)
 

@@ -1,15 +1,14 @@
 /**
-* @file blvd.c
-* @brief source file for blvd
-* @author Chris Takahashi <takahashi@ieat-fresh.com>, i-eat Co., Ltd.
-* @date 20210218
-* @details 
-* RS485(Modbus) command I/F for the BLV series, Oriental Motor Co.Ltd.
-*/
+ * @file shm_communicator.c
+ * @brief source file for shared memory communication
+ * @author Masaaki Hijikata <hijimasa@gmail.com>
+ * @date 20240214
+ */
 
-extern "C" {
+extern "C"
+{
 #include <stdio.h>
-#include <fcntl.h>    /* For O_RDWR */
+#include <fcntl.h> /* For O_RDWR */
 #include <unistd.h>
 #include <time.h>
 #include <stdlib.h>
@@ -30,9 +29,9 @@ extern "C" {
  * @retval -1 failure
  */
 ShmComunicator::return_type
-ShmComunicator::openMemory()
+ShmComunicator::openMemory(std::string name)
 {
-  shm_fd = shm_open("isaac_ros2_control_data", O_RDWR|O_CREAT, static_cast<mode_t>(DEFAULT_PERM));  
+  shm_fd = shm_open((std::string(SHM_DEFAULT_NAME) + std::string("_") + name).c_str(), O_RDWR | O_CREAT, static_cast<mode_t>(DEFAULT_PERM));
   if (shm_fd < 0)
   {
     return return_type::ERROR;
@@ -49,11 +48,11 @@ ShmComunicator::openMemory()
     fstat(shm_fd, &stat);
   }
   shm_ptr = reinterpret_cast<unsigned char *>(mmap(NULL,
-          stat.st_size,
-          PROT_READ|PROT_WRITE,
-          MAP_SHARED,
-          shm_fd,
-            0));
+                                                   stat.st_size,
+                                                   PROT_READ | PROT_WRITE,
+                                                   MAP_SHARED,
+                                                   shm_fd,
+                                                   0));
 
   return return_type::SUCCESS;
 }
@@ -64,8 +63,7 @@ ShmComunicator::openMemory()
  * @retval 0 success
  * @retval -1 failure
  */
-void
-ShmComunicator::closeMemory()
+void ShmComunicator::closeMemory()
 {
 }
 
@@ -73,47 +71,42 @@ ShmComunicator::closeMemory()
  * @fn writeRadps
  * @
  */
-int
-ShmComunicator::writeRadps(int ch, float rad)
+int ShmComunicator::writeRadps(int ch, float rad)
 {
-  reinterpret_cast<float*>(shm_ptr)[4*ch] = rad;
+  reinterpret_cast<float *>(shm_ptr)[4 * ch] = rad;
 
   return 0;
 }
 
 /**
  * @fn readRad
- * 
+ *
  */
-int
-ShmComunicator::readRad(int ch, float *rad)
+int ShmComunicator::readRad(int ch, float *rad)
 {
-  *rad = reinterpret_cast<float*>(shm_ptr)[4*ch+1];
+  *rad = reinterpret_cast<float *>(shm_ptr)[4 * ch + 1];
 
   return 0;
 }
 
 /**
  * @fn readRadps
- * 
+ *
  */
-int
-ShmComunicator::readRadps(int ch, float *radps)
+int ShmComunicator::readRadps(int ch, float *radps)
 {
-  *radps = reinterpret_cast<float*>(shm_ptr)[4*ch+2];
+  *radps = reinterpret_cast<float *>(shm_ptr)[4 * ch + 2];
 
   return 0;
 }
 
 /**
  * @fn readTorque
- * 
+ *
  */
-int
-ShmComunicator::readTorque(int ch, float *torque)
+int ShmComunicator::readTorque(int ch, float *torque)
 {
-  *torque = reinterpret_cast<float*>(shm_ptr)[4*ch+3];
+  *torque = reinterpret_cast<float *>(shm_ptr)[4 * ch + 3];
 
   return 0;
 }
-

@@ -65,6 +65,7 @@ The features of this repository are below:
    ```bash
    docker exec -it isaac-sim /bin/bash
    ros2 run teleop_twist_keyboard teleop_twist_keyboard
+   ```
 
 > [!NOTE]
 > For the first time, launching Isaac Sim takes a very long time.
@@ -72,7 +73,7 @@ The features of this repository are below:
 > So you should rerun the launch command after Isaac Sim fully launched or change WAIT_TIME in "colcon_ws/src/isaac_diffbot_sim/launch/diffbot_spawn.launch.py"
 > WAIT_TIME represents the time between the execution of the command and the spawn of the robot.
 > 
-> Remember to rebuild if you change WAIT_TIME!   ```
+> Remember to rebuild if you change WAIT_TIME!
 
 ## Bug
 - LaserScan topic do not published when 2D Lidar config file is used.

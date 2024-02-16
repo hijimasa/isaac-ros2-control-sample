@@ -77,11 +77,11 @@ def main(urdf_path:str):
 
     clsMMap = class_mmap.classMMap(robot_name)
 
-    stage_path = "/" + robot_name + "/base_link"
+    stage_path = "/World/" + robot_name + "/base_link"
 
     joints_prim_paths = []
     for joint in urdf_joints:
-        joints_prim_paths.append(search_joint_and_link.search_joint_prim_path(kinematics_chain, "/" + robot_name + "/", joint.attrib["name"]))
+        joints_prim_paths.append(search_joint_and_link.search_joint_prim_path(kinematics_chain, "/World/" + robot_name + "/", joint.attrib["name"]))
 
     drive = []
     for index in range(len(joints_prim_paths)):
@@ -90,7 +90,6 @@ def main(urdf_path:str):
     dc = _dynamic_control.acquire_dynamic_control_interface()
 
     art = dc.get_articulation(stage_path)
-
     if art == _dynamic_control.INVALID_HANDLE:
         return "_dynamic_control.INVALID_HANDLE"
     else:

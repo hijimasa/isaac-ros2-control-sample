@@ -4,13 +4,13 @@ import omni.kit.commands
 import omni.usd
 from pxr import UsdGeom, Gf
 
-def main(urdf_path:str, x=0.0, y=0.0, z=0.0, roll=0.0, pitch=0.0, yaw=90):
+def main(urdf_path:str, x=0.0, y=0.0, z=0.0, roll=0.0, pitch=0.0, yaw=90, fixed=False):
     status, import_config = omni.kit.commands.execute("URDFCreateImportConfig")
     import_config.merge_fixed_joints = False
-    import_config.convex_decomp = False
+    import_config.convex_decomp = True
     import_config.import_inertia_tensor = True
     import_config.self_collision = False
-    import_config.fix_base = False
+    import_config.fix_base = fixed
     import_config.distance_scale = 1
 
     status, stage_path = omni.kit.commands.execute(

@@ -9,15 +9,22 @@ class SimLancher(Node):
     def __init__(self):
         super().__init__('sim_launcher')
 
+        self.declare_parameter('usd_path', '')
+        usd_path = self.get_parameter('usd_path').get_parameter_value().string_value
+        if usd_path == '':
+            usd_path = os.path.join(
+                get_package_share_directory('isaac_ros2_scripts'), 'meshes/USD/default_stage.usd')
+
         self.proc = None
         
         python_script = os.path.join(
                     '/isaac-sim', 'python.sh')
         start_script = os.path.join(
                     get_package_share_directory('isaac_ros2_scripts'), 'start_sim.py')
-        command = ["bash", python_script, start_script]
+        command = ["bash", python_script, start_script, usd_path]
         print(command)
-        os.environ["FASTRTPS_DEFAULT_PROFILES_FILE"]="~/colcon_ws/fastdds.xml"
+        os.environ["FASTRTPS_DEFAULT_PROFILES_FILE"]=os.path.join(
+                get_package_share_directory('isaac_ros2_scripts'), 'config/fastdds.xml')
         self.proc = subprocess.Popen(command, preexec_fn=os.setsid)        
     
     def __del__(self):

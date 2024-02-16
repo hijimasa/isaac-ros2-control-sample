@@ -50,7 +50,7 @@ def main(urdf_path:str):
         from omni.kit.viewport.utility import get_viewport_from_window_name
 
         if child.attrib["type"] == "lidar":
-            prim_path = search_joint_and_link.search_link_prim_path(kinematics_chain, "/" + robot_name + "/", child.attrib["name"])
+            prim_path = search_joint_and_link.search_link_prim_path(kinematics_chain, "/World/" + robot_name + "/", child.attrib["name"])
 
             _, my_lidar = omni.kit.commands.execute(
                 "IsaacSensorCreateRtxLidar",
@@ -87,7 +87,7 @@ def main(urdf_path:str):
             horizontal_aperture = math.tan(horizontal_fov_rad / 2.0) * 2.0 * horizontal_focal_length
             vertical_aperture = math.tan(horizontal_fov_rad / aspect_ratio / 2.0) * 2.0 * vertical_focal_length
 
-            prim_path = search_joint_and_link.search_link_prim_path(kinematics_chain, "/" + robot_name + "/", child.attrib["name"])
+            prim_path = search_joint_and_link.search_link_prim_path(kinematics_chain, "/World/" + robot_name + "/", child.attrib["name"])
 
             camera_prim = UsdGeom.Camera(omni.usd.get_context().get_stage().DefinePrim(prim_path + "/Camera", "Camera"))
             xform_api = UsdGeom.XformCommonAPI(camera_prim)
@@ -186,7 +186,7 @@ def main(urdf_path:str):
             horizontal_aperture = math.tan(horizontal_fov_rad / 2.0) * 2.0 * horizontal_focal_length
             vertical_aperture = math.tan(horizontal_fov_rad / aspect_ratio / 2.0) * 2.0 * vertical_focal_length
 
-            prim_path = search_joint_and_link.search_link_prim_path(kinematics_chain, "/" + robot_name + "/", child.attrib["name"])
+            prim_path = search_joint_and_link.search_link_prim_path(kinematics_chain, "/World/" + robot_name + "/", child.attrib["name"])
 
             camera_prim = UsdGeom.Camera(omni.usd.get_context().get_stage().DefinePrim(prim_path + "/Camera", "Camera"))
             xform_api = UsdGeom.XformCommonAPI(camera_prim)

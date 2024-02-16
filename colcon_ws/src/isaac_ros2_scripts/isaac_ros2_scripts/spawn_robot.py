@@ -24,7 +24,9 @@ class SimLancher(Node):
         robot_pitch = self.get_parameter('P').get_parameter_value().double_value
         self.declare_parameter('Y', 0.0)
         robot_yaw = self.get_parameter('Y').get_parameter_value().double_value
-        
+        self.declare_parameter('fixed', False)
+        robot_fixed = self.get_parameter('fixed').get_parameter_value().bool_value
+
         self.sensor_proc = None
 
         spawn_command_path = os.path.join(
@@ -41,6 +43,7 @@ class SimLancher(Node):
             data_lines = data_lines.replace("ROBOT_X", str(robot_x))
             data_lines = data_lines.replace("ROBOT_Y", str(robot_y))
             data_lines = data_lines.replace("ROBOT_Z", str(robot_z))
+            data_lines = data_lines.replace("ROBOT_FIXED", str(robot_fixed))
 
         with open(temp_spawn_command_path, mode="w", encoding="utf-8") as f:
             f.write(data_lines)

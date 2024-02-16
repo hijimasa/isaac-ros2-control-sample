@@ -50,12 +50,12 @@ namespace isaac_ros2_control
         return CallbackReturn::ERROR;
       }
 
-      if (joint.command_interfaces[0].name != hardware_interface::HW_IF_VELOCITY)
+      if (joint.command_interfaces[0].name != hardware_interface::HW_IF_POSITION && joint.command_interfaces[0].name != hardware_interface::HW_IF_VELOCITY)
       {
         RCLCPP_FATAL(
             rclcpp::get_logger("IsaacSystem"),
-            "Joint '%s' have %s command interfaces found. '%s' expected.", joint.name.c_str(),
-            joint.command_interfaces[0].name.c_str(), hardware_interface::HW_IF_VELOCITY);
+            "Joint '%s' have %s command interfaces found. '%s' or '%s' expected.", joint.name.c_str(),
+            joint.command_interfaces[0].name.c_str(), hardware_interface::HW_IF_POSITION, hardware_interface::HW_IF_VELOCITY);
         return CallbackReturn::ERROR;
       }
 
@@ -122,8 +122,16 @@ namespace isaac_ros2_control
     std::vector<hardware_interface::CommandInterface> command_interfaces;
     for (auto i = 0u; i < info_.joints.size(); i++)
     {
-      command_interfaces.emplace_back(hardware_interface::CommandInterface(
-          info_.joints[i].name, hardware_interface::HW_IF_VELOCITY, &hw_commands_[i]));
+      if (info_.joints[i].command_interfaces[0].name == hardware_interface::HW_IF_POSITION)
+      {
+        command_interfaces.emplace_back(hardware_interface::CommandInterface(
+            info_.joints[i].name, hardware_interface::HW_IF_POSITION, &hw_commands_[i]));
+      }
+      else
+      {
+        command_interfaces.emplace_back(hardware_interface::CommandInterface(
+            info_.joints[i].name, hardware_interface::HW_IF_VELOCITY, &hw_commands_[i]));
+      }
     }
 
     return command_interfaces;
@@ -198,8 +206,17 @@ namespace isaac_ros2_control
   {
     for (auto i = 0u; i < hw_commands_.size(); i++)
     {
-      // Generate the motor command message
-      shm.writeRadps(i, hw_commands_[i]);
+      if (info_.joints[i].command_interfaces[0].name == hardware_interface::HW_IF_POSITION)
+      {
+        // Generate the motor command message
+        // TODO: writeRad()
+        shm.writeRadps(i, hw_commands_[i]);
+      }
+      else
+      {
+        // Generate the motor command message
+        shm.writeRadps(i, hw_commands_[i]);
+      }
     }
 
     return hardware_interface::return_type::OK;

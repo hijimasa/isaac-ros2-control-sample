@@ -14,6 +14,8 @@ setup(
         ('share/' + package_name, ['package.xml']),
         (os.path.join('share',package_name), glob('isaac_scripts/*.py')),
         (os.path.join('share',package_name), glob('isaac_scripts/*.sh')),
+        (os.path.join('share',package_name, 'meshes', 'USD'), glob('meshes/USD/*.usd')),
+        (os.path.join('share',package_name, 'config'), glob('config/*.xml')),
     ],
     install_requires=['setuptools'],
     zip_safe=True,

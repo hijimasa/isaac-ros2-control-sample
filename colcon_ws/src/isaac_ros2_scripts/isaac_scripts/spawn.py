@@ -11,6 +11,8 @@ def main(urdf_path:str, x=0.0, y=0.0, z=0.0, roll=0.0, pitch=0.0, yaw=90, fixed=
     import_config.import_inertia_tensor = True
     import_config.self_collision = False
     import_config.fix_base = fixed
+    import_config.default_drive_strength = 100000.0
+    import_config.default_position_drive_damping = 100000.0
     import_config.distance_scale = 1
 
     status, stage_path = omni.kit.commands.execute(

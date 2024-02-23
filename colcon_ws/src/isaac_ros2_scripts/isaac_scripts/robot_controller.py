@@ -71,6 +71,8 @@ def main(urdf_path:str):
             if child.attrib["name"] == joint.attrib["name"]:
                 if child.attrib["type"] == "continuous":
                     joint_type.append("angular")
+                elif child.attrib["type"] == "prismatic":
+                    joint_type.append("linear")
                 else:
                     joint_type.append(child.attrib["type"])
                 break
@@ -88,16 +90,15 @@ def main(urdf_path:str):
         drive.append(UsdPhysics.DriveAPI.Get(stage_handle.GetPrimAtPath(joints_prim_paths[index]), joint_type[index]))
 
     dc = _dynamic_control.acquire_dynamic_control_interface()
-
-    art = dc.get_articulation(stage_path)
-    if art == _dynamic_control.INVALID_HANDLE:
-        return "_dynamic_control.INVALID_HANDLE"
-    else:
-        print(f"Got articulation {stage_path} with handle {art}")
+    art = None
 
     async def control_loop(clsMMap, drive, joints_prim_paths, dc, art):
         while True:
             await omni.kit.app.get_app().next_update_async()
+            if art == None or art == _dynamic_control.INVALID_HANDLE:
+                art = dc.get_articulation(stage_path)
+            if art == _dynamic_control.INVALID_HANDLE:
+                continue
 
             for index in range(len(joints_prim_paths)):
                 radps = clsMMap.ReadFloat(4*index);

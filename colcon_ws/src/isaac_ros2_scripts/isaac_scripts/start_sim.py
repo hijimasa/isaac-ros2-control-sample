@@ -43,7 +43,7 @@ def main():
     simulation_context = SimulationContext(physics_dt=1.0 / Frame_per_Second, rendering_dt=1.0 / Frame_per_Second, stage_units_in_meters=1.0)
 
     # Start simulation
-    omni.timeline.get_timeline_interface().play()
+    #omni.timeline.get_timeline_interface().play()
 
     try:
         while True:

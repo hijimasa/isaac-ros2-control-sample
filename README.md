@@ -81,5 +81,5 @@ The features of this repository are below:
 ## Bug
 - LaserScan topic do not published when 2D Lidar config file is used.
 - You should uncheck "Normarize Image" in your depth topic in RViz2 if you get black depth image.
-
+- Arm robot support is still on the way.
 

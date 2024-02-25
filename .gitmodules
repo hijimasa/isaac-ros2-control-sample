@@ -7,3 +7,9 @@
 [submodule "colcon_ws/src/rcpputils"]
 	path = colcon_ws/src/rcpputils
 	url = https://github.com/ros2/rcpputils.git
+[submodule "colcon_ws/src/ros2_controllers"]
+	path = colcon_ws/src/ros2_controllers
+	url = https://github.com/ros-controls/ros2_controllers.git
+[submodule "colcon_ws/src/kinematics_interface"]
+	path = colcon_ws/src/kinematics_interface
+	url = https://github.com/ros-controls/kinematics_interface.git

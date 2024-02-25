@@ -1,3 +1,6 @@
+from moveit_configs_utils import MoveItConfigsBuilder
+from moveit_configs_utils.launches import generate_demo_launch
+
 import os
 import pathlib
 from launch import LaunchDescription
@@ -19,10 +22,6 @@ def generate_launch_description():
         "rviz_tutorial", default_value="False", description="Tutorial flag"
     )
 
-    db_arg = DeclareLaunchArgument(
-        "db", default_value="False", description="Database flag"
-    )
-
     ros2_control_hardware_type = DeclareLaunchArgument(
         "ros2_control_hardware_type",
         #default_value="mock_components",
@@ -31,7 +30,7 @@ def generate_launch_description():
     )
 
     moveit_config = (
-        MoveItConfigsBuilder("isaac_franka")
+        MoveItConfigsBuilder("panda", package_name="franka_moveit_config")
         .robot_description(
             file_path="config/panda.urdf.xacro",
             mappings={
@@ -41,10 +40,6 @@ def generate_launch_description():
             },
         )
         .robot_description_semantic(file_path="config/panda.srdf")
-        .trajectory_execution(file_path="config/gripper_moveit_controllers.yaml")
-        .planning_pipelines(
-            pipelines=["ompl", "chomp", "pilz_industrial_motion_planner"]
-        )
         .to_moveit_configs()
     )
 
@@ -60,7 +55,7 @@ def generate_launch_description():
     # RViz
     tutorial_mode = LaunchConfiguration("rviz_tutorial")
     rviz_base = os.path.join(
-        get_package_share_directory("isaac_franka_moveit_config"), "launch"
+        get_package_share_directory("franka_moveit_config"), "launch"
     )
     rviz_full_config = os.path.join(rviz_base, "moveit.rviz")
     rviz_empty_config = os.path.join(rviz_base, "moveit_empty.rviz")
@@ -113,7 +108,7 @@ def generate_launch_description():
 
     # ros2_control using FakeSystem as hardware
     ros2_controllers_path = os.path.join(
-        get_package_share_directory("isaac_franka_moveit_config"),
+        get_package_share_directory("franka_moveit_config"),
         "config",
         "ros2_controllers.yaml",
     )
@@ -143,28 +138,14 @@ def generate_launch_description():
         arguments=["panda_arm_controller", "-c", "/controller_manager"],
     )
 
-    panda_hand_controller_spawner = Node(
+    hand_controller_spawner = Node(
         package="controller_manager",
         executable="spawner",
-        arguments=["panda_hand_controller", "-c", "/controller_manager"],
-    )
-
-    # Warehouse mongodb server
-    db_config = LaunchConfiguration("db")
-    mongodb_server_node = Node(
-        package="warehouse_ros_mongo",
-        executable="mongo_wrapper_ros.py",
-        parameters=[
-            {"warehouse_port": 33829},
-            {"warehouse_host": "localhost"},
-            {"warehouse_plugin": "warehouse_ros_mongo::MongoDatabaseConnection"},
-        ],
-        output="screen",
-        condition=IfCondition(db_config),
+        arguments=["hand_controller", "-c", "/controller_manager"],
     )
 
     isaac_franka_moveit_config_path = os.path.join(
-        get_package_share_directory('isaac_franka_moveit_config'))
+        get_package_share_directory('franka_moveit_config'))
 
     xacro_file = os.path.join(isaac_franka_moveit_config_path,
                               'config',
@@ -211,7 +192,6 @@ def generate_launch_description():
                 )
             ),
             tutorial_arg,
-            db_arg,
             ros2_control_hardware_type,
             rviz_node,
             rviz_node_tutorial,
@@ -221,8 +201,7 @@ def generate_launch_description():
             ros2_control_node,
             joint_state_broadcaster_spawner,
             panda_arm_controller_spawner,
-            panda_hand_controller_spawner,
-            mongodb_server_node,
+            hand_controller_spawner,
             isaac_spawn_robot,
         ]
     )

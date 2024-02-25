@@ -115,14 +115,19 @@ def main(urdf_path:str):
                 clsMMap.WriteFloat(4*index+1, urdf_joint_initial_values[index])
             if urdf_joint_command_interfaces[index] == "velocity":
                 clsMMap.WriteFloat(4*index+2, urdf_joint_initial_values[index])
+
+            dof_ptr = dc.find_articulation_dof(art, joint_name[index])
             if urdf_joint_command_interfaces[index] == "position":
                 drive[index].CreateTargetPositionAttr().Set(urdf_joint_initial_values[index])
                 drive[index].CreateDampingAttr().Set(0)
                 drive[index].CreateStiffnessAttr().Set(0)
+                dc.set_dof_position(dof_ptr, urdf_joint_initial_values[index])
+
             elif urdf_joint_command_interfaces[index] == "velocity":
                 drive[index].CreateTargetVelocityAttr().Set(urdf_joint_initial_values[index])
                 drive[index].CreateDampingAttr().Set(15000)
                 drive[index].CreateStiffnessAttr().Set(0)
+                dc.set_dof_velocity(dof_ptr, urdf_joint_initial_values[index])
 
         while True:
             await omni.kit.app.get_app().next_update_async()

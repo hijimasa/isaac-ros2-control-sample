@@ -60,6 +60,7 @@ The features of this repository are below:
    ```
 
 7. Launch the package
+
    7.1. For Mobile Robot
    - To launch simulator
    ```bash

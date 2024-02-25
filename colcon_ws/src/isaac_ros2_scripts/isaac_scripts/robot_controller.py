@@ -84,6 +84,8 @@ def main(urdf_path:str):
             if child.attrib["name"] == joint.attrib["name"]:
                 if child.attrib["type"] == "continuous":
                     joint_type.append("angular")
+                elif child.attrib["type"] == "revolute":
+                    joint_type.append("angular")
                 elif child.attrib["type"] == "prismatic":
                     joint_type.append("linear")
                 else:
@@ -119,8 +121,8 @@ def main(urdf_path:str):
             dof_ptr = dc.find_articulation_dof(art, joint_name[index])
             if urdf_joint_command_interfaces[index] == "position":
                 drive[index].CreateTargetPositionAttr().Set(urdf_joint_initial_values[index])
-                drive[index].CreateDampingAttr().Set(0)
-                drive[index].CreateStiffnessAttr().Set(0)
+                drive[index].CreateDampingAttr().Set(1000)
+                drive[index].CreateStiffnessAttr().Set(1000000)
                 dc.set_dof_position(dof_ptr, urdf_joint_initial_values[index])
 
             elif urdf_joint_command_interfaces[index] == "velocity":
@@ -135,10 +137,12 @@ def main(urdf_path:str):
             for index in range(len(joints_prim_paths)):
                 if urdf_joint_command_interfaces[index] == "position":
                     rad = clsMMap.ReadFloat(4*index);
+                    with open('/tmp/example.txt', 'a') as file:
+                        file.write(str(rad) + ",")
 
-                    drive[index].GetTargetPositionAttr().Set(rad)
-                    drive[index].GetDampingAttr().Set(0)
-                    drive[index].GetStiffnessAttr().Set(0)
+                    drive[index].GetTargetPositionAttr().Set(rad * 180 / math.pi)
+                    drive[index].GetDampingAttr().Set(1000)
+                    drive[index].GetStiffnessAttr().Set(1000000)
                 if urdf_joint_command_interfaces[index] == "velocity":
                     radps = clsMMap.ReadFloat(4*index);
             
@@ -150,6 +154,10 @@ def main(urdf_path:str):
                 clsMMap.WriteFloat(4*index+1, dc.get_dof_position(dof_ptr))
                 clsMMap.WriteFloat(4*index+2, dc.get_dof_velocity(dof_ptr))
                 clsMMap.WriteFloat(4*index+3, dc.get_dof_effort(dof_ptr))
+
+            with open('/tmp/example.txt', 'a') as file:
+                file.write("\n")
+
 
     def loop_in_thread(loop):
         asyncio.set_event_loop(loop)

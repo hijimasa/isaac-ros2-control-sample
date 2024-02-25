@@ -30,7 +30,6 @@ def main(urdf_path:str, x=0.0, y=0.0, z=0.0, roll=0.0, pitch=0.0, yaw=90, fixed=
     if obj.IsValid():
         # オブジェクトの位置を取得
         obj_xform = UsdGeom.Xformable(obj)
-        xform_ops = obj_xform.GetOrderedXformOps()
 
         # オブジェクトの現在の回転をクリア
         obj_xform.ClearXformOpOrder()

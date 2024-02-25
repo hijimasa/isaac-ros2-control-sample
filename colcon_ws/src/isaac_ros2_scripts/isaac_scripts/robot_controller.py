@@ -137,8 +137,6 @@ def main(urdf_path:str):
             for index in range(len(joints_prim_paths)):
                 if urdf_joint_command_interfaces[index] == "position":
                     rad = clsMMap.ReadFloat(4*index);
-                    with open('/tmp/example.txt', 'a') as file:
-                        file.write(str(rad) + ",")
 
                     drive[index].GetTargetPositionAttr().Set(rad * 180 / math.pi)
                     drive[index].GetDampingAttr().Set(1000)
@@ -154,10 +152,6 @@ def main(urdf_path:str):
                 clsMMap.WriteFloat(4*index+1, dc.get_dof_position(dof_ptr))
                 clsMMap.WriteFloat(4*index+2, dc.get_dof_velocity(dof_ptr))
                 clsMMap.WriteFloat(4*index+3, dc.get_dof_effort(dof_ptr))
-
-            with open('/tmp/example.txt', 'a') as file:
-                file.write("\n")
-
 
     def loop_in_thread(loop):
         asyncio.set_event_loop(loop)

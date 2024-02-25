@@ -120,13 +120,19 @@ def main(urdf_path:str):
 
             dof_ptr = dc.find_articulation_dof(art, joint_name[index])
             if urdf_joint_command_interfaces[index] == "position":
-                drive[index].CreateTargetPositionAttr().Set(urdf_joint_initial_values[index])
-                drive[index].CreateDampingAttr().Set(1000)
-                drive[index].CreateStiffnessAttr().Set(1000000)
+                command = urdf_joint_initial_values[index]
+                if joint_type[index] == "angular":
+                    command = command *180 / math.pi
+                drive[index].CreateTargetPositionAttr().Set(command)
+                drive[index].CreateDampingAttr().Set(0)
+                drive[index].CreateStiffnessAttr().Set(100000000)
                 dc.set_dof_position(dof_ptr, urdf_joint_initial_values[index])
 
             elif urdf_joint_command_interfaces[index] == "velocity":
-                drive[index].CreateTargetVelocityAttr().Set(urdf_joint_initial_values[index])
+                command = urdf_joint_initial_values[index]
+                if joint_type[index] == "angular":
+                    command = command *180 / math.pi
+                drive[index].CreateTargetVelocityAttr().Set(command)
                 drive[index].CreateDampingAttr().Set(15000)
                 drive[index].CreateStiffnessAttr().Set(0)
                 dc.set_dof_velocity(dof_ptr, urdf_joint_initial_values[index])
@@ -136,15 +142,19 @@ def main(urdf_path:str):
 
             for index in range(len(joints_prim_paths)):
                 if urdf_joint_command_interfaces[index] == "position":
-                    rad = clsMMap.ReadFloat(4*index);
+                    command = clsMMap.ReadFloat(4*index)
+                    if joint_type[index] == "angular":
+                        command = command *180 / math.pi
 
-                    drive[index].GetTargetPositionAttr().Set(rad * 180 / math.pi)
-                    drive[index].GetDampingAttr().Set(1000)
-                    drive[index].GetStiffnessAttr().Set(1000000)
+                    drive[index].GetTargetPositionAttr().Set(command)
+                    drive[index].GetDampingAttr().Set(0)
+                    drive[index].GetStiffnessAttr().Set(100000000)
                 if urdf_joint_command_interfaces[index] == "velocity":
-                    radps = clsMMap.ReadFloat(4*index);
+                    command = clsMMap.ReadFloat(4*index)
+                    if joint_type[index] == "angular":
+                        command = command *180 / math.pi
             
-                    drive[index].GetTargetVelocityAttr().Set(radps * 180 / math.pi)
+                    drive[index].GetTargetVelocityAttr().Set(command)
                     drive[index].GetDampingAttr().Set(15000)
                     drive[index].GetStiffnessAttr().Set(0)
 

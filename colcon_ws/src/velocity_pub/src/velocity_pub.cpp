@@ -32,6 +32,7 @@ private:
     auto message = geometry_msgs::msg::TwistStamped();
     message.header.stamp = this->get_clock()->now();
     message.twist.linear.x = input_cmd_vel_.linear.x;
+    message.twist.linear.y = input_cmd_vel_.linear.y;
     message.twist.angular.z = input_cmd_vel_.angular.z;
 //    RCLCPP_INFO(this->get_logger(), "Publishing: '%f'", message.twist.linear.x);
     publisher_->publish(message);
@@ -40,6 +41,7 @@ private:
   void cmd_vel_callback(const geometry_msgs::msg::Twist::SharedPtr msg)
   {
     input_cmd_vel_.linear.x = msg->linear.x;
+    input_cmd_vel_.linear.y = msg->linear.y;
     input_cmd_vel_.angular.z = msg->angular.z;
 //    RCLCPP_INFO(this->get_logger(), "I heard: %f", msg->linear.x);
   }

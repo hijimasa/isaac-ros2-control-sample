@@ -94,6 +94,8 @@ The features of this repository are below:
 > For the first time, launching Isaac Sim takes a very long time.
 > Isaac Sim must be fully launched to spawn the robot.
 
+## Next
+You can make URDF for Isaac Sim with [this documentation](https://hijimasa.github.io/isaac_ros2_utils/).
 
 ## Bug
 - LaserScan topic do not published when 2D Lidar config file is used.

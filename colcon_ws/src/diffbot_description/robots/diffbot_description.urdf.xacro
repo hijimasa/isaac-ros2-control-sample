@@ -16,6 +16,7 @@
       <parent link="${parent}"/>
       <child  link="${prefix}_link"/>
       <axis xyz="0 0 1" />
+      <isaac_drive_api stiffness="0" damping="30000"/>
     </joint>
     <transmission name="${prefix}_trans" type="SimpleTransmission">
       <type>transmission_interface/SimpleTransmission</type>

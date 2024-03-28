@@ -22,6 +22,7 @@ The features of this repository are below:
 - This launches sensors from URDF description.
 - This spawns URDF model at the desired timing and position.
 - This launchs sensors and controller at the desired timing.
+- This sets stiffness and damping from URDF description.
 
 ## Prerequisite
 1. Docker

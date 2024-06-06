@@ -17,12 +17,12 @@ Important packages are "isaac_ros2_control" and "isaac_ros2_scripts".
 The features of this repository are below:
 - This shows how to control a robot on Isaac Sim with ros2_control.
 - This provides a Dockerfile where Isaac Sim and ROS2 Humble can coexist.
-- This currently supports only rotational joints using velocity control.
+- This currently supports prismatic and rotational joints using position and velocity control.
 - This sends joint status (position, velocity and effort) to ros2_control from Isaac Sim.
 - This launches sensors from URDF description.
 - This spawns URDF model at the desired timing and position.
 - This launchs sensors and controller at the desired timing.
-- This sets stiffness and damping from URDF description.
+- This sets stiffness, damping and friction from URDF description.
 
 ## Prerequisite
 1. Docker

@@ -4,10 +4,16 @@
   <xacro:macro name="diffbot" params="prefix use_sim:=^|false">
 
   <material name="gray">
-    <color rgba="0.5 0.5 0.5 1.0"/>
+    <color rgba="0.5 0.5 0.5 0.2"/>
+    <isaac_rigid_body static_friction="0.8" dynamic_friction="0.5"/>
+  </material>
+  <material name="ball">
+    <color rgba="0.5 0.5 0.5 0.2"/>
+    <isaac_rigid_body static_friction="0.0" dynamic_friction="0.0"/>
   </material>
   <material name="white">
     <color rgba="1.0 1.0 1.0 1.0"/>
+    <isaac_rigid_body static_friction="1.0" dynamic_friction="1.0"/>
   </material>
 
   <xacro:macro name="wheel_macro" params="parent prefix xyz">
@@ -16,7 +22,7 @@
       <parent link="${parent}"/>
       <child  link="${prefix}_link"/>
       <axis xyz="0 0 1" />
-      <isaac_drive_api stiffness="0" damping="30000"/>
+      <isaac_drive_api stiffness="0" damping="30000" joint_friction="10000"/>
     </joint>
     <transmission name="${prefix}_trans" type="SimpleTransmission">
       <type>transmission_interface/SimpleTransmission</type>
@@ -45,13 +51,6 @@
         </geometry>
       </collision>
     </link>
-    <gazebo reference="${prefix}_link">
-      <material>Gazebo/Gray</material>
-      <mu1 value="2.5" />
-      <mu2 value="2.5" />
-      <kp value="50000" />
-      <kd value="10" />
-    </gazebo>
   </xacro:macro> 
 
   <link name="base_link"/>
@@ -81,9 +80,6 @@
       </geometry>
     </collision>
   </link>
-  <gazebo reference="body_link">
-    <material>Gazebo/Gray</material>
-  </gazebo>
 
   <xacro:wheel_macro prefix="left_wheel"  parent="base_link" xyz="0 0.1 0.05"/>
   <xacro:wheel_macro prefix="right_wheel" parent="base_link" xyz="0 -0.1 0.05"/>
@@ -99,21 +95,15 @@
       <geometry>
         <sphere radius="0.04" />
       </geometry>
-      <material name="gray" />
+      <material name="ball" />
     </visual>
     <collision>
       <origin xyz="0 0 0" rpy="0 0 0" />
       <geometry>
         <sphere radius="0.04" />
       </geometry>
-      <material name="gray" />
     </collision>
   </link>
-  <gazebo reference="ball_link">
-    <material>Gazebo/Gray</material>
-    <mu1 value="0.5" />
-    <mu2 value="0.5" />
-  </gazebo>
   
   <joint name="lidar_joint" type="fixed">
     <parent link="base_link"/>

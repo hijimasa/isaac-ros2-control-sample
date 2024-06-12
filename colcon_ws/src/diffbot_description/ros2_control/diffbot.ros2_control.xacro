@@ -12,8 +12,8 @@
         </xacro:if>
         <xacro:if value="${use_sim}">
           <plugin>topic_based_ros2_control/TopicBasedSystem</plugin>
-          <param name="joint_commands_topic">/joint_command</param>
-          <param name="joint_states_topic">/joint_states</param>
+          <param name="joint_commands_topic">/${name}/joint_command</param>
+          <param name="joint_states_topic">/${name}/joint_states</param>
           <param name="sum_wrapped_joint_states">true</param>
         </xacro:if>
       </hardware>

@@ -51,6 +51,22 @@
         </clip>
         <update_rate>10</update_rate>
       </sensor>
+      
+      <surface_gripper name="body_link">
+        <topic>gripper_enable</topic>
+        <offset_x>1.0</offset_x>
+        <offset_y>0</offset_y>
+        <offset_z>0</offset_z>
+        <axis>1 0 0</axis>
+        <grip_threshold>0.1</grip_threshold>
+        <force_limit>1.0e2</force_limit>
+        <torque_limit>1.0e3</torque_limit>
+        <bend_angle>0.7854</bend_angle>
+        <stiffness>1.0e4</stiffness>
+        <damping>1.0e3</damping>
+        <retry_close>False</retry_close>
+      </surface_gripper>
+
     </isaac>
 
   </xacro:macro>

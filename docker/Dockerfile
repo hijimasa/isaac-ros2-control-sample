@@ -1,4 +1,4 @@
-FROM nvcr.io/nvidia/isaac-sim:4.0.0
+FROM nvcr.io/nvidia/isaac-sim:4.1.0
 
 ENV DEBIAN_FRONTEND noninteractive
 

@@ -152,7 +152,8 @@ def generate_launch_description():
                               'panda.urdf.xacro')
     urdf_path = os.path.join(isaac_franka_moveit_config_path, 'config', 'panda.urdf')
     # xacroをロード
-    doc = xacro.process_file(xacro_file, mappings={'use_sim' : 'true'})
+    doc = xacro.process_file(xacro_file, mappings={'use_sim' : 'true', 
+                                                   "ros2_control_hardware_type": "isaac"})
     # xacroを展開してURDFを生成
     robot_desc = doc.toprettyxml(indent='  ')
     f = open(urdf_path, 'w')

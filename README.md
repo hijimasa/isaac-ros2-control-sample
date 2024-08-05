@@ -9,8 +9,8 @@
   ![arm_robot_demo](figs/arm_robot_test.gif)
 
 This repository shows how to control the robot from ros2_control to make Isaac Sim easier to use.
-Important packages are "isaac_ros2_control" and "isaac_ros2_scripts". 
-"isaac_ros2_control" provide hardware_interface class and send the commands from ros2_control to "isaac_ros2_scripts".
+Important packages are "topic_based_ros2_control" and "isaac_ros2_scripts". 
+"topic_based_ros2_control" provide hardware_interface class and send the commands from ros2_control to "isaac_ros2_scripts".
 "isaac_ros2_scripts" is needed bacause Isaac Sim needs specific python environment.
 "isaac_ros2_scripts" has the python script to launch and control Isaac Sim.
 
@@ -57,7 +57,7 @@ The features of this repository are below:
 
 6. Build ros2 source codes
    ```bash
-   colcon build && source install/setup.bash
+   colcon build && source install/setup.sh
    ```
 
 7. Launch the package

@@ -13,6 +13,8 @@
                     <param name="joint_commands_topic">/${name}/joint_command</param>
                     <param name="joint_states_topic">/${name}/joint_states</param>
                     <param name="sum_wrapped_joint_states">true</param>
+                    <param name="use_initial_states_as_initial_commands">false</param>
+                    <param name="wait_for_reaching_initial_values">true</param>
                 </xacro:if>
             </hardware>
             <joint name="panda_joint1">

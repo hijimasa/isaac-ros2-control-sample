@@ -8,10 +8,10 @@
       <sensor name="lidar_link" type="lidar">
         <topic>scan</topic>
         <sensor_dimension_num>3</sensor_dimension_num> <!-- 2 or 3 -->
-        <config>Example_Rotary</config>
+        <config>hokuyo/UST-30LX</config>
         <!-- Config Example
         <config>Example_Rotary</config>
-        <config>slamtec/RPLIDAR_S2E</config> LaserScan do not work Why?
+        <config>SLAMTEC/RPLIDAR_S2E</config> LaserScan do not work Why?
         <config>hokuyo/UST-30LX</config> LaserScan do not work Why?
         -->
       </sensor>

@@ -45,7 +45,7 @@ def generate_launch_description():
     control_node = Node(
         package="controller_manager",
         executable="ros2_control_node",
-        parameters=[params, robot_controllers],
+        parameters=[params, robot_controllers, {'use_sim_time': True}],
         output={
             "stdout": "screen",
             "stderr": "screen",
@@ -56,18 +56,20 @@ def generate_launch_description():
         package='robot_state_publisher',
         executable='robot_state_publisher',
         output='screen',
-        parameters=[params]
+        parameters=[params, {'use_sim_time': True}]
     )
 
     joint_state_broadcaster_spawner = Node(
         package="controller_manager",
         executable="spawner",
+        parameters=[{'use_sim_time': True}],
         arguments=["joint_state_broadcaster", "--controller-manager", "/controller_manager"],
     )
     
     diff_drive_controller_spawner = Node(
         package="controller_manager",
         executable="spawner",
+        parameters=[{'use_sim_time': True}],
         arguments=["diff_drive_controller", "--controller-manager", "/controller_manager"],
     )
 
@@ -75,7 +77,7 @@ def generate_launch_description():
         package='velocity_pub',
         name='velocity_pub',
         executable='velocity_pub',
-       remappings=[
+        remappings=[
             ('cmd_vel_stamped', '/diff_drive_controller/cmd_vel'),
         ],
     )

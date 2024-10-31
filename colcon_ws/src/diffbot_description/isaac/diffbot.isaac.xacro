@@ -67,6 +67,9 @@
         <retry_close>False</retry_close>
       </surface_gripper>
 
+      <thruster name="body_link">
+      </thruster>
+
     </isaac>
 
   </xacro:macro>

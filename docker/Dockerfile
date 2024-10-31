@@ -1,4 +1,4 @@
-FROM nvcr.io/nvidia/isaac-sim:4.1.0
+FROM nvcr.io/nvidia/isaac-sim:4.2.0
 
 ENV DEBIAN_FRONTEND noninteractive
 
@@ -38,7 +38,7 @@ RUN apt -y -qq update && apt -y -qq install software-properties-common mesa-util
     ros-humble-pluginlib ros-humble-urdf ros-humble-yaml-cpp-vendor ros-humble-joint-state-pub* \
     ros-humble-cv-bridge ros-humble-diagnostic-updater \
     ros-humble-moveit && \
-  apt-get install -y -qq ros-humble-xacro ros-humble-realtime-tools ros-humble-control-toolbox ros-humble-ros2-control* \
+  apt-get install -y -qq ros-humble-xacro ros-humble-realtime-tools ros-humble-control-toolbox ros-humble-ros2-control* ros-humble-ros-testing \
     ros-humble-teleop-twist-keyboard ros-humble-vision-msgs && \
   : "remove cache" && \
   apt-get autoremove -y -qq && \

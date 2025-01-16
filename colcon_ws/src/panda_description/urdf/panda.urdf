@@ -26,6 +26,7 @@
             <geometry>
                 <mesh filename="package://moveit_resources_panda_description/meshes/collision/link1.stl" />
             </geometry>
+            <convex_decomposition max_convex_hulls="256"/>
         </collision>
     </link>
     <joint name="panda_joint1" type="revolute">

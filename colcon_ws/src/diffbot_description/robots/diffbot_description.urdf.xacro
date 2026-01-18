@@ -159,5 +159,23 @@
     -->
   </link>
 
+  <joint name="thruster_joint" type="fixed">
+    <parent link="base_link"/>
+    <child  link="thruster_link"/>
+    <origin xyz="-0.1 0.1 0.1" rpy="0 ${pi/2} 0"/>
+  </joint>
+  <link name="thruster_link">
+    <!-- If visual tag is enable, camera's view is blocked. -->
+    <!--
+    <visual>
+      <origin xyz="0 0 0" rpy="0 -1.57 0" />
+      <geometry>
+        <cylinder radius="0.01" length="0.01" />
+      </geometry>
+      <material name="white" />
+    </visual>
+    -->
+  </link>
+
   </xacro:macro>
 </robot>

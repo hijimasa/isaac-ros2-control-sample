@@ -69,6 +69,8 @@
 
       <thruster name="body_link">
       </thruster>
+      <thruster name="thruster_link">
+      </thruster>
 
     </isaac>
 

@@ -93,31 +93,7 @@ def generate_launch_description():
                     }],
     )
 
-    isaac_prepare_sensors = Node(
-        package="isaac_ros2_scripts",
-        executable="prepare_sensors",
-        parameters=[{'urdf_path': str(relative_urdf_path)}],
-    )
-
-    isaac_prepare_robot_controller = Node(
-        package="isaac_ros2_scripts",
-        executable="prepare_robot_controller",
-        parameters=[{'urdf_path': str(relative_urdf_path)}],
-    )
-
     return LaunchDescription([
-        RegisterEventHandler(
-            event_handler=OnProcessExit(
-                target_action=isaac_spawn_robot,
-                on_exit=[isaac_prepare_sensors],
-            )
-        ),
-        RegisterEventHandler(
-            event_handler=OnProcessExit(
-                target_action=isaac_prepare_sensors,
-                on_exit=[isaac_prepare_robot_controller],
-            )
-        ),
         control_node,
         node_robot_state_publisher,
         joint_state_broadcaster_spawner,

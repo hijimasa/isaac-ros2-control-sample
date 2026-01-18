@@ -178,20 +178,8 @@ def generate_launch_description():
                     }],
     )
 
-    isaac_prepare_robot_controller = Node(
-        package="isaac_ros2_scripts",
-        executable="prepare_robot_controller",
-        parameters=[{'urdf_path': str(urdf_path)}],
-    )
-
     return LaunchDescription(
         [
-            RegisterEventHandler(
-                event_handler=OnProcessExit(
-                    target_action=isaac_spawn_robot,
-                    on_exit=[isaac_prepare_robot_controller],
-                )
-            ),
             tutorial_arg,
             ros2_control_hardware_type,
             rviz_node,

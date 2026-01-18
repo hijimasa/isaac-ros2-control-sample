@@ -1,4 +1,6 @@
-FROM nvcr.io/nvidia/isaac-sim:4.2.0
+FROM nvcr.io/nvidia/isaac-sim:5.1.0
+
+USER root
 
 ENV DEBIAN_FRONTEND noninteractive
 
@@ -24,6 +26,10 @@ RUN wget -O - https://apt.kitware.com/keys/kitware-archive-latest.asc 2>/dev/nul
 
 # for ros2
 RUN ln -sf /usr/share/zoneinfo/Asia/Tokyo /etc/localtime
+RUN apt update && apt install -y software-properties-common
+RUN apt --fix-broken install
+RUN apt install -f
+RUN apt install -y libfreetype6-dev
 RUN apt -y -qq update && apt -y -qq install software-properties-common mesa-utils libglu1-mesa-dev\
   freeglut3-dev mesa-common-dev libglew-dev libglfw3-dev libglm-dev \
   libao-dev libmpg123-dev libasio-dev && \
@@ -33,13 +39,13 @@ RUN apt -y -qq update && apt -y -qq install software-properties-common mesa-util
   echo "deb [arch=$(dpkg --print-architecture) signed-by=/usr/share/keyrings/ros-archive-keyring.gpg] http://packages.ros.org/ros2/ubuntu $(. /etc/os-release && echo $UBUNTU_CODENAME) main" | tee /etc/apt/sources.list.d/ros2.list > /dev/null && \
   apt -y -qq update && \
   apt -y -qq upgrade && \
-  apt -y -qq install ros-humble-desktop \
-    ros-humble-ament-cmake ros-humble-angles ros-humble-controller-manager \
-    ros-humble-pluginlib ros-humble-urdf ros-humble-yaml-cpp-vendor ros-humble-joint-state-pub* \
-    ros-humble-cv-bridge ros-humble-diagnostic-updater \
-    ros-humble-moveit && \
-  apt-get install -y -qq ros-humble-xacro ros-humble-realtime-tools ros-humble-control-toolbox ros-humble-ros2-control* ros-humble-ros-testing \
-    ros-humble-teleop-twist-keyboard ros-humble-vision-msgs && \
+  apt -y -qq install ros-jazzy-desktop \
+    ros-jazzy-ament-cmake ros-jazzy-angles ros-jazzy-controller-manager \
+    ros-jazzy-pluginlib ros-jazzy-urdf ros-jazzy-yaml-cpp-vendor ros-jazzy-joint-state-pub* \
+    ros-jazzy-cv-bridge ros-jazzy-diagnostic-updater \
+    ros-jazzy-moveit && \
+  apt-get install -y -qq ros-jazzy-xacro ros-jazzy-realtime-tools ros-jazzy-control-toolbox ros-jazzy-ros2-control* ros-jazzy-ros-testing \
+    ros-jazzy-teleop-twist-keyboard ros-jazzy-vision-msgs && \
   : "remove cache" && \
   apt-get autoremove -y -qq && \
   rm -rf /var/lib/apt/lists/*
@@ -72,17 +78,23 @@ RUN echo '#!/bin/bash\n /usr/bin/code --user-data-dir="/root/.config/Code" --no-
     chmod +x /usr/local/bin/code
 
 RUN apt-get update && apt-get install -q -y --no-install-recommends \
-    ros-humble-rmw-cyclonedds-cpp \
+    ros-jazzy-rmw-cyclonedds-cpp \
     iproute2 \
     && apt-get clean
+
+RUN pip3 install --break-system-packages fastapi uvicorn
+
+RUN usermod -aG ubuntu isaac-sim
 
 #RUN echo 'export FASTRTPS_DEFAULT_PROFILES_FILE=/root/colcon_ws/src/isaac_ros2_utils/isaac_ros2_scripts/config/fastdds.xml' >> ~/.bashrc
 #RUN echo 'export RMW_IMPLEMENTATION=rmw_fastrtps_cpp' >> ~/.bashrc
 
+USER isaac-sim
+
 RUN echo 'export RMW_IMPLEMENTATION=rmw_cyclonedds_cpp' >> ~/.bashrc
 RUN echo 'ip link set lo multicast on' >> ~/.bashrc
 
-RUN echo 'source /opt/ros/humble/setup.bash' >> ~/.bashrc
-RUN echo 'source /root/colcon_ws/install/setup.sh' >> ~/.bashrc
+RUN echo 'source /opt/ros/jazzy/setup.bash' >> ~/.bashrc
+RUN echo 'source /home/isaac-sim/colcon_ws/install/setup.sh' >> ~/.bashrc
 
 ENTRYPOINT ["/bin/bash"]

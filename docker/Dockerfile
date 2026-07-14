@@ -13,7 +13,7 @@ RUN set -x && \
     libyaml-cpp-dev curl software-properties-common \
     vim v4l-utils exfat-* \
     openssh-server \
-    terminator dbus-x11 \
+    terminator dbus-x11 xdg-utils desktop-file-utils shared-mime-info nautilus \
     python3-pip && \
   : "remove cache" && \
   apt-get autoremove -y -qq && \
@@ -89,9 +89,14 @@ RUN usermod -aG ubuntu isaac-sim
 #RUN echo 'export FASTRTPS_DEFAULT_PROFILES_FILE=/root/colcon_ws/src/isaac_ros2_utils/isaac_ros2_scripts/config/fastdds.xml' >> ~/.bashrc
 #RUN echo 'export RMW_IMPLEMENTATION=rmw_fastrtps_cpp' >> ~/.bashrc
 
+RUN mkdir -p /usr/local/bin
+COPY code.sh /usr/local/bin/code
+RUN chmod +x /usr/local/bin/code
+
 USER isaac-sim
 
 RUN echo 'export RMW_IMPLEMENTATION=rmw_cyclonedds_cpp' >> ~/.bashrc
+RUN echo 'export XDG_CONFIG_HOME=/isaac-sim/.config' >> ~/.bashrc
 RUN echo 'ip link set lo multicast on' >> ~/.bashrc
 
 RUN echo 'source /opt/ros/jazzy/setup.bash' >> ~/.bashrc

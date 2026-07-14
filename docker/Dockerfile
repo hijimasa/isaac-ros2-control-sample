@@ -1,4 +1,4 @@
-FROM nvcr.io/nvidia/isaac-sim:5.1.0
+FROM nvcr.io/nvidia/isaac-sim:6.0.1
 
 USER root
 

@@ -16,7 +16,7 @@ Important packages are "topic_based_ros2_control" and "isaac_ros2_scripts".
 
 The features of this repository are below:
 - This shows how to control a robot on Isaac Sim with ros2_control.
-- This provides a Dockerfile where Isaac Sim and ROS2 Humble can coexist.
+- This provides a Dockerfile where Isaac Sim and ROS 2 Jazzy can coexist.
 - This currently supports prismatic and rotational joints using position and velocity control.
 - This sends joint status (position, velocity and effort) to ros2_control from Isaac Sim.
 - This launches sensors from URDF description.
@@ -24,9 +24,26 @@ The features of this repository are below:
 - This launchs sensors and controller at the desired timing.
 - This sets stiffness, damping and friction from URDF description.
 
+## Supported Versions
+
+| Branch / Tag | Isaac Sim | ROS 2 |
+|----|----|----|
+| `main` | 6.0.1 | Jazzy |
+
+For Isaac Sim 5.x, use the commit tagged before the Isaac Sim 6 migration
+(`d03e96e` and earlier).
+
 ## Prerequisite
 1. Docker
-1. Isaac Sim Docker Image (Tested using image based on nvcr.io/nvidia/isaac-sim:5.1.0)
+1. Isaac Sim Docker Image (Tested using image based on nvcr.io/nvidia/isaac-sim:6.0.1)
+1. NVIDIA Driver 575 or later
+
+> [!IMPORTANT]
+> Isaac Sim 6 is built with CUDA 12.9. With older host drivers (e.g. 555),
+> most features appear to work but the RTX LiDAR silently publishes no data
+> (`CUDA Driver CALL FAILED ... the provided PTX was compiled with an
+> unsupported toolchain.` appears in the log). Upgrade the host driver to
+> 575 or later.
 
 ## How to use
 1. Install Docker and pull Isaac Sim Docker Image.
@@ -96,6 +113,20 @@ The features of this repository are below:
 
 ## Next
 You can make URDF for Isaac Sim with [this documentation](https://hijimasa.github.io/isaac_ros2_utils/).
+
+## Migration notes for Isaac Sim 6
+
+- JSON LiDAR profiles (`lidar_configs/*.json`) were removed from Isaac Sim.
+  LiDARs are now USD sensor assets resolved by name. Set the `<config>` tag in
+  your URDF to one of the supported names (e.g. `Example_Rotary`,
+  `Example_Rotary_2D`, `SICK_TIM781`, `RPLIDAR_S2E`, `OS1`, `HESAI_XT32_SD10`).
+  Unsupported names (including the old Hokuyo configs) automatically fall back
+  to `Example_Rotary_2D` / `Example_Rotary` with a warning listing all
+  supported names.
+- The URDF importer was rewritten in Isaac Sim 6. Spawned robots now place
+  links under `/<robot>/Geometry/` and joints under `/<robot>/Physics/`, so
+  topic names derived from prim paths change accordingly (e.g.
+  `/diffbot/Geometry/base_link/lidar_link/scan`).
 
 ## Bug
 - LaserScan topic do not published when 2D Lidar config file is used.
